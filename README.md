@@ -5,9 +5,12 @@ Usage
 -----
 
 This library supports the following devices :
-    * DS18B20
-    * DS18S20 - Please note there appears to be an issue with this series.
-    * DS1822
+
+
+* DS18B20
+* DS18S20 - Please note there appears to be an issue with this series.
+* DS1822
+
 
 You will need a pull-up resistor of about 5 KOhm between the 1-Wire data line
 and your 5V power. If you are using the DS18B20, ground pins 1 and 3. The
@@ -19,8 +22,12 @@ want to slim down the code feel free to use either of these by including
 
 
 	#define REQUIRESNEW 
+
 or 
+
 	#define REQUIRESALARMS
+
+
 at the top of DallasTemperature.h
 
 

@@ -15,7 +15,11 @@ centre pin is the data line '1-wire'.
 
 We have included a "REQUIRESNEW" and "REQUIRESALARMS" definition. If you 
 want to slim down the code feel free to use either of these by including
+
+.. code::
+
 #define REQUIRESNEW or #define REQUIRESALARMS a the top of DallasTemperature.h
+
 
 Credits
 -------

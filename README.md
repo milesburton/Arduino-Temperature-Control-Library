@@ -18,7 +18,7 @@ want to slim down the code feel free to use either of these by including
 
 .. code::
 
-#define REQUIRESNEW or #define REQUIRESALARMS a the top of DallasTemperature.h
+	#define REQUIRESNEW or #define REQUIRESALARMS a the top of DallasTemperature.h
 
 
 Credits

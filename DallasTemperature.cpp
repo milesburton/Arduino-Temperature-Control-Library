@@ -253,7 +253,7 @@ uint8_t DallasTemperature::getResolution()
 // returns 0 if device not found
 uint8_t DallasTemperature::getResolution(uint8_t* deviceAddress)
 {
-  if (deviceAddress[0] == DS18S20MODEL) return 9; // this model has a fixed resolution
+  if (deviceAddress[0] == DS18S20MODEL) return 12;
 
   ScratchPad scratchPad;
   if (isConnected(deviceAddress, scratchPad))

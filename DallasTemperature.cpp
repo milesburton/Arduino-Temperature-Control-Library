@@ -253,6 +253,8 @@ uint8_t DallasTemperature::getResolution()
 // returns 0 if device not found
 uint8_t DallasTemperature::getResolution(uint8_t* deviceAddress)
 {
+  // this model has a fixed resolution of 9 bits but getTemp calculates 
+  // a full 12 bits resolution and we need 750ms convert time
   if (deviceAddress[0] == DS18S20MODEL) return 12;
 
   ScratchPad scratchPad;
@@ -405,78 +407,73 @@ float DallasTemperature::getTempCByIndex(uint8_t deviceIndex)
 // Fetch temperature for device index
 float DallasTemperature::getTempFByIndex(uint8_t deviceIndex)
 {
-  return toFahrenheit(getTempCByIndex(deviceIndex));
+  DeviceAddress deviceAddress;
+  getAddress(deviceAddress, deviceIndex);
+  return getTempF((uint8_t*)deviceAddress);
 }
 
-// reads scratchpad and returns the temperature in degrees C
-float DallasTemperature::calculateTemperature(uint8_t* deviceAddress, uint8_t* scratchPad)
+// reads scratchpad and returns the raw temperature (12bit)
+int16_t DallasTemperature::calculateTemperature(uint8_t* deviceAddress, uint8_t* scratchPad)
 {
   int16_t rawTemperature = (((int16_t)scratchPad[TEMP_MSB]) << 8) | scratchPad[TEMP_LSB];
 
-  switch (deviceAddress[0])
-  {
-    case DS18B20MODEL:
-    case DS1822MODEL:
-      switch (scratchPad[CONFIGURATION])
-      {
-        case TEMP_12_BIT:
-          return (float)rawTemperature * 0.0625;
-          break;
-        case TEMP_11_BIT:
-          return (float)(rawTemperature >> 1) * 0.125;
-          break;
-        case TEMP_10_BIT:
-          return (float)(rawTemperature >> 2) * 0.25;
-          break;
-        case TEMP_9_BIT:
-          return (float)(rawTemperature >> 3) * 0.5;
-          break;
-      }
-      break;
-    case DS18S20MODEL:
-      /*
+  /*  DS18S20
+  Resolutions greater than 9 bits can be calculated using the data from
+  the temperature, COUNT REMAIN and COUNT PER °C registers in the
+  scratchpad. Note that the COUNT PER °C register is hard-wired to 16
+  (10h). After reading the scratchpad, the TEMP_READ value is obtained
+  by truncating the 0.5°C bit (bit 0) from the temperature data. The
+  extended resolution temperature can then be calculated using the
+  following equation:
 
-      Resolutions greater than 9 bits can be calculated using the data from
-      the temperature, COUNT REMAIN and COUNT PER °C registers in the
-      scratchpad. Note that the COUNT PER °C register is hard-wired to 16
-      (10h). After reading the scratchpad, the TEMP_READ value is obtained
-      by truncating the 0.5°C bit (bit 0) from the temperature data. The
-      extended resolution temperature can then be calculated using the
-      following equation:
+                                  COUNT_PER_C - COUNT_REMAIN
+  TEMPERATURE = TEMP_READ - 0.25 + --------------------------
+                                          COUNT_PER_C
+  
+  Simplified to integer arithmetic for a 12 bits value:
 
-                                       COUNT_PER_C - COUNT_REMAIN
-      TEMPERATURE = TEMP_READ - 0.25 + --------------------------
-                                               COUNT_PER_C
-      */
+  TEMPERATURE = ((raw & 0xFFFE) << 3) - 4 + 16 - COUNT_REMAIN
 
-      // Good spot. Thanks Nic Johns for your contribution
-      return (float)(rawTemperature >> 1) - 0.25 +((float)(scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) / (float)scratchPad[COUNT_PER_C] );
-      break;
-  }
+  See - http://myarduinotoy.blogspot.co.uk/2013/02/12bit-result-from-ds18s20.html
+  */
+
+  if (deviceAddress[0] == DS18S20MODEL)
+    rawTemperature = ((rawTemperature & 0xFFFE) << 3) + 12 - scratchPad[COUNT_REMAIN];
+
+  return rawTemperature;
 }
 
-// returns temperature in degrees C or DEVICE_DISCONNECTED if the
+
+// returns raw temperature in 1/16 degrees C or DEVICE_DISCONNECTED_RAW if the
 // device's scratch pad cannot be read successfully.
-// the numeric value of DEVICE_DISCONNECTED is defined in
+// the numeric value of DEVICE_DISCONNECTED_RAW is defined in
+// DallasTemperature.h. It is a large negative number outside the
+// operating range of the device
+int16_t DallasTemperature::getTemp(uint8_t* deviceAddress)
+{
+  ScratchPad scratchPad;
+  if (isConnected(deviceAddress, scratchPad)) return calculateTemperature(deviceAddress, scratchPad);
+  return DEVICE_DISCONNECTED_RAW;
+}
+
+// returns temperature in degrees C or DEVICE_DISCONNECTED_C if the
+// device's scratch pad cannot be read successfully.
+// the numeric value of DEVICE_DISCONNECTED_C is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
 float DallasTemperature::getTempC(uint8_t* deviceAddress)
 {
-  // TODO: Multiple devices (up to 64) on the same bus may take 
-  //       some time to negotiate a response
-  // What happens in case of collision?
-
-  ScratchPad scratchPad;
-  if (isConnected(deviceAddress, scratchPad)) return calculateTemperature(deviceAddress, scratchPad);
-  return DEVICE_DISCONNECTED;
+  return rawToCelsius(getTemp(deviceAddress));
 }
 
-// returns temperature in degrees F
-// TODO: - when getTempC returns DEVICE_DISCONNECTED 
-//        -127 gets converted to -196.6 F
+// returns temperature in degrees F or DEVICE_DISCONNECTED_F if the
+// device's scratch pad cannot be read successfully.
+// the numeric value of DEVICE_DISCONNECTED_F is defined in
+// DallasTemperature.h. It is a large negative number outside the
+// operating range of the device
 float DallasTemperature::getTempF(uint8_t* deviceAddress)
 {
-  return toFahrenheit(getTempC(deviceAddress));
+  return rawToFahrenheit(getTemp(deviceAddress));
 }
 
 // returns true if the bus requires parasite power
@@ -507,7 +504,7 @@ the next temperature conversion.
 
 */
 
-// sets the high alarm temperature for a device in degrees celsius
+// sets the high alarm temperature for a device in degrees Celsius
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setHighAlarmTemp(uint8_t* deviceAddress, char celsius)
@@ -524,7 +521,7 @@ void DallasTemperature::setHighAlarmTemp(uint8_t* deviceAddress, char celsius)
   }
 }
 
-// sets the low alarm temperature for a device in degreed celsius
+// sets the low alarm temperature for a device in degrees Celsius
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setLowAlarmTemp(uint8_t* deviceAddress, char celsius)
@@ -547,7 +544,7 @@ char DallasTemperature::getHighAlarmTemp(uint8_t* deviceAddress)
 {
   ScratchPad scratchPad;
   if (isConnected(deviceAddress, scratchPad)) return (char)scratchPad[HIGH_ALARM_TEMP];
-  return DEVICE_DISCONNECTED;
+  return DEVICE_DISCONNECTED_C;
 }
 
 // returns a char with the current low alarm temperature or
@@ -556,7 +553,7 @@ char DallasTemperature::getLowAlarmTemp(uint8_t* deviceAddress)
 {
   ScratchPad scratchPad;
   if (isConnected(deviceAddress, scratchPad)) return (char)scratchPad[LOW_ALARM_TEMP];
-  return DEVICE_DISCONNECTED;
+  return DEVICE_DISCONNECTED_C;
 }
 
 // resets internal variables used for the alarm search
@@ -617,7 +614,7 @@ bool DallasTemperature::alarmSearch(uint8_t* newAddr)
         if (alarmSearchAddress[ibyte] & ibit) a = 1;
         else
         {
-          // Only 0s count as pending junctions, we've already exhasuted the 0 side of 1s
+          // Only 0s count as pending junctions, we've already exhausted the 0 side of 1s
           a = 0;
           done = 0;
           lastJunction = i;
@@ -701,16 +698,35 @@ void DallasTemperature::defaultAlarmHandler(uint8_t* deviceAddress)
 
 #endif
 
-// Convert float celsius to fahrenheit
+// Convert float Celsius to Fahrenheit
 float DallasTemperature::toFahrenheit(float celsius)
 {
   return (celsius * 1.8) + 32;
 }
 
-// Convert float fahrenheit to celsius
+// Convert float Fahrenheit to Celsius
 float DallasTemperature::toCelsius(float fahrenheit)
 {
   return (fahrenheit - 32) / 1.8;
+}
+
+// convert from raw to Celsius
+float DallasTemperature::rawToCelsius(const int16_t raw)
+{
+  if (raw <= DEVICE_DISCONNECTED_RAW) 
+    return DEVICE_DISCONNECTED_C;
+  // C = RAW/16
+  return (float)raw * 0.0625;
+}
+
+// convert from raw to Fahrenheit
+float DallasTemperature::rawToFahrenheit(const int16_t raw)
+{
+  if (raw <= DEVICE_DISCONNECTED_RAW) 
+    return DEVICE_DISCONNECTED_F;
+  // C = RAW/16
+  // F = (C*1.8)+32 = (RAW/16*1.8)+32 = (RAW*0.1125)+32
+  return ((float)raw * 0.1125) + 32;
 }
 
 #if REQUIRESNEW
@@ -720,13 +736,13 @@ void* DallasTemperature::operator new(unsigned int size) // Implicit NSS obj siz
 {
   void * p; // void pointer
   p = malloc(size); // Allocate memory
-  memset((DallasTemperature*)p,0,size); // Initalise memory
+  memset((DallasTemperature*)p,0,size); // Initialise memory
 
   //!!! CANT EXPLICITLY CALL CONSTRUCTOR - workaround by using an init() methodR - workaround by using an init() method
   return (DallasTemperature*) p; // Cast blank region to NSS pointer
 }
 
-// MnetCS 2009 -  Unallocates the memory used by this instance
+// MnetCS 2009 -  Free the memory used by this instance
 void DallasTemperature::operator delete(void* p)
 {
   DallasTemperature* pNss =  (DallasTemperature*) p; // Cast to NSS pointer

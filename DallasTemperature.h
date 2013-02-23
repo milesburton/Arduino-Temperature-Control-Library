@@ -25,6 +25,7 @@
 #define DS18S20MODEL 0x10
 #define DS18B20MODEL 0x28
 #define DS1822MODEL  0x22
+#define DS1825MODEL  0x3B
 
 // OneWire commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad
@@ -53,7 +54,9 @@
 #define TEMP_12_BIT 0x7F // 12 bit
 
 // Error Codes
-#define DEVICE_DISCONNECTED -127
+#define DEVICE_DISCONNECTED_C -127
+#define DEVICE_DISCONNECTED_F -196.6
+#define DEVICE_DISCONNECTED_RAW -2032
 
 typedef uint8_t DeviceAddress[8];
 
@@ -63,7 +66,7 @@ class DallasTemperature
 
   DallasTemperature(OneWire*);
 
-  // initalise bus
+  // initialise bus
   void begin(void);
 
   // returns the number of devices found on the bus
@@ -100,7 +103,7 @@ class DallasTemperature
   // set global resolution to 9, 10, 11, or 12 bits
   void setResolution(uint8_t);
 
-  // returns the device resolution, 9-12
+  // returns the device resolution: 9, 10, 11, or 12 bits
   uint8_t getResolution(uint8_t*);
 
   // set resolution of a device to 9, 10, 11, or 12 bits
@@ -122,6 +125,9 @@ class DallasTemperature
 
   // sends command for one device to perform a temperature conversion by index
   bool requestTemperaturesByIndex(uint8_t);
+
+  // returns temperature raw value (12 bit integer of 1/16 degrees C)
+  int16_t getTemp(uint8_t*);
 
   // returns temperature in degrees C
   float getTempC(uint8_t*);
@@ -183,15 +189,21 @@ class DallasTemperature
 
   #endif
 
-  // convert from celcius to farenheit
+  // convert from Celsius to Fahrenheit
   static float toFahrenheit(const float);
 
-  // convert from farenheit to celsius
+  // convert from Fahrenheit to Celsius
   static float toCelsius(const float);
+
+  // convert from raw to Celsius
+  static float rawToCelsius(const int16_t);
+
+  // convert from raw to Fahrenheit
+  static float rawToFahrenheit(const int16_t);
 
   #if REQUIRESNEW
 
-  // initalize memory area
+  // initialize memory area
   void* operator new (unsigned int);
 
   // delete memory reference
@@ -221,8 +233,8 @@ class DallasTemperature
   // Take a pointer to one wire instance
   OneWire* _wire;
 
-  // reads scratchpad and returns the temperature in degrees C
-  float calculateTemperature(uint8_t*, uint8_t*);
+  // reads scratchpad and returns the raw temperature
+  int16_t calculateTemperature(uint8_t*, uint8_t*);
   
   void	blockTillConversionComplete(uint8_t*,uint8_t*);
   

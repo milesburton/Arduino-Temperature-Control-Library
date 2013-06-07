@@ -400,7 +400,8 @@ bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex)
 float DallasTemperature::getTempCByIndex(uint8_t deviceIndex)
 {
   DeviceAddress deviceAddress;
-  getAddress(deviceAddress, deviceIndex);
+  if (!getAddress(deviceAddress, deviceIndex))
+    return DEVICE_DISCONNECTED_C;
   return getTempC((uint8_t*)deviceAddress);
 }
 
@@ -408,7 +409,8 @@ float DallasTemperature::getTempCByIndex(uint8_t deviceIndex)
 float DallasTemperature::getTempFByIndex(uint8_t deviceIndex)
 {
   DeviceAddress deviceAddress;
-  getAddress(deviceAddress, deviceIndex);
+  if (!getAddress(deviceAddress, deviceIndex))
+    return DEVICE_DISCONNECTED_F;
   return getTempF((uint8_t*)deviceAddress);
 }
 

@@ -236,7 +236,7 @@ class DallasTemperature
   // reads scratchpad and returns the raw temperature
   int16_t calculateTemperature(uint8_t*, uint8_t*);
   
-  void	blockTillConversionComplete(uint8_t*,uint8_t*);
+  void	blockTillConversionComplete(uint8_t, uint8_t*);
   
   #if REQUIRESALARMS
 

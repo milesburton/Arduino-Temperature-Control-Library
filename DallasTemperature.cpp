@@ -329,9 +329,7 @@ void DallasTemperature::requestTemperatures()
 
   // ASYNC mode?
   if (!waitForConversion) return; 
-  blockTillConversionComplete(&bitResolution, 0);
-
-  return;
+  blockTillConversionComplete(bitResolution, 0);
 }
 
 // sends command for one device to perform a temperature by address
@@ -351,14 +349,13 @@ bool DallasTemperature::requestTemperaturesByAddress(uint8_t* deviceAddress)
   
   // ASYNC mode?
   if (!waitForConversion) return true;   
-  uint8_t bitResolution = getResolution(deviceAddress);
-  blockTillConversionComplete(&bitResolution, deviceAddress);
+  blockTillConversionComplete(getResolution(deviceAddress), deviceAddress);
   
   return true;
 }
 
 
-void DallasTemperature::blockTillConversionComplete(uint8_t* bitResolution, uint8_t* deviceAddress)
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, uint8_t* deviceAddress)
 {
 	if(deviceAddress != 0 && checkForConversion && !parasite)
 	{
@@ -369,7 +366,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t* bitResolution, uint
 	}
 	
   	// Wait a fix number of cycles till conversion is complete (based on IC datasheet)
-	  switch (*bitResolution)
+	  switch (bitResolution)
 	  {
 	    case 9:
 	      delay(94);
@@ -385,7 +382,6 @@ void DallasTemperature::blockTillConversionComplete(uint8_t* bitResolution, uint
 	      delay(750);
 	      break;
 	  }
-
 }
 
 // sends command for one device to perform a temp conversion by index

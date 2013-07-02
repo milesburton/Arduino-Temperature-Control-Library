@@ -339,19 +339,15 @@ void DallasTemperature::requestTemperatures()
 // returns TRUE  otherwise
 bool DallasTemperature::requestTemperaturesByAddress(uint8_t* deviceAddress)
 {
+  uint8_t bitResolution = getResolution(deviceAddress);
+  if (bitResolution == 0) return false; //Device disconnected
 
   _wire->reset();
   _wire->select(deviceAddress);
   _wire->write(STARTCONVO, parasite);
-  
-    // check device
-  ScratchPad scratchPad;
-  if (!isConnected(deviceAddress, scratchPad)) return false;
-  
-  
+
   // ASYNC mode?
   if (!waitForConversion) return true;   
-  uint8_t bitResolution = getResolution(deviceAddress);
   blockTillConversionComplete(&bitResolution, deviceAddress);
   
   return true;

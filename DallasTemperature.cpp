@@ -329,7 +329,7 @@ void DallasTemperature::requestTemperatures()
 
   // ASYNC mode?
   if (!waitForConversion) return; 
-  blockTillConversionComplete(bitResolution, 0);
+  blockTillConversionComplete(bitResolution, NULL);
 }
 
 // sends command for one device to perform a temperature by address
@@ -354,34 +354,29 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
   return true;
 }
 
+// returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
+int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution)
+{
+	switch (bitResolution)
+	{
+		case 9: return 94;
+		case 10: return 188;
+		case 11: return 375;
+		default: return 750;
+	}
+}
 
+// Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const uint8_t* deviceAddress)
 {
-	if(deviceAddress != 0 && checkForConversion && !parasite)
-	{
-	  	// Continue to check if the IC has responded with a temperature
-	  	// NB: Could cause issues with multiple devices (one device may respond faster)
-	  	unsigned long start = millis();
-		while(!isConversionAvailable(0) && ((millis() - start) < 750));	
+	int delms = millisToWaitForConversion(bitResolution);
+	if(deviceAddress != NULL && checkForConversion && !parasite) {
+		unsigned long timend = millis() + delms;
+		while(!isConversionAvailable(deviceAddress) && (millis() < timend));
 	}
-	
-  	// Wait a fix number of cycles till conversion is complete (based on IC datasheet)
-	  switch (bitResolution)
-	  {
-	    case 9:
-	      delay(94);
-	      break;
-	    case 10:
-	      delay(188);
-	      break;
-	    case 11:
-	      delay(375);
-	      break;
-	    case 12:
-	    default:
-	      delay(750);
-	      break;
-	  }
+	else {
+		delay(delms);
+	}
 }
 
 // sends command for one device to perform a temp conversion by index

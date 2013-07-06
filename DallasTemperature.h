@@ -79,7 +79,7 @@ class DallasTemperature
   bool validAddress(const uint8_t*);
 
   // finds an address at a given index on the bus 
-  bool getAddress(uint8_t*, const uint8_t);
+  bool getAddress(uint8_t*, uint8_t);
   
   // attempt to determine if the device at the given address is connected to the bus
   bool isConnected(const uint8_t*);
@@ -152,11 +152,11 @@ class DallasTemperature
 
   // sets the high alarm temperature for a device
   // accepts a char.  valid range is -55C - 125C
-  void setHighAlarmTemp(const uint8_t*, const char);
+  void setHighAlarmTemp(const uint8_t*, char);
 
   // sets the low alarm temperature for a device
   // accepts a char.  valid range is -55C - 125C
-  void setLowAlarmTemp(const uint8_t*, const char);
+  void setLowAlarmTemp(const uint8_t*, char);
 
   // returns a signed char with the current high alarm temperature for a device
   // in the range -55C - 125C
@@ -190,16 +190,16 @@ class DallasTemperature
   #endif
 
   // convert from Celsius to Fahrenheit
-  static float toFahrenheit(const float);
+  static float toFahrenheit(float);
 
   // convert from Fahrenheit to Celsius
-  static float toCelsius(const float);
+  static float toCelsius(float);
 
   // convert from raw to Celsius
-  static float rawToCelsius(const int16_t);
+  static float rawToCelsius(int16_t);
 
   // convert from raw to Fahrenheit
-  static float rawToFahrenheit(const int16_t);
+  static float rawToFahrenheit(int16_t);
 
   #if REQUIRESNEW
 

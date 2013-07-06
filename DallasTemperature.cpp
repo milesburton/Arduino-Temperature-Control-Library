@@ -704,7 +704,7 @@ float DallasTemperature::toCelsius(float fahrenheit)
 }
 
 // convert from raw to Celsius
-float DallasTemperature::rawToCelsius(const int16_t raw)
+float DallasTemperature::rawToCelsius(int16_t raw)
 {
   if (raw <= DEVICE_DISCONNECTED_RAW) 
     return DEVICE_DISCONNECTED_C;
@@ -713,7 +713,7 @@ float DallasTemperature::rawToCelsius(const int16_t raw)
 }
 
 // convert from raw to Fahrenheit
-float DallasTemperature::rawToFahrenheit(const int16_t raw)
+float DallasTemperature::rawToFahrenheit(int16_t raw)
 {
   if (raw <= DEVICE_DISCONNECTED_RAW) 
     return DEVICE_DISCONNECTED_F;

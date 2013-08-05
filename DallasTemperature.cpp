@@ -178,6 +178,7 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     // DS18S20 does not use the configuration register
     if (deviceAddress[0] != DS18S20MODEL) _wire->write(scratchPad[CONFIGURATION]); // configuration
     _wire->reset();
+    _wire->select(deviceAddress); //<--this line was missing
     // save the newly written values to eeprom
     _wire->write(COPYSCRATCH, parasite);
     if (parasite) delay(10); // 10ms delay

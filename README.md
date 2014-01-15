@@ -10,6 +10,7 @@ This library supports the following devices :
 * DS18B20
 * DS18S20 - Please note there appears to be an issue with this series.
 * DS1822
+* DS1820
 
 
 You will need a pull-up resistor of about 5 KOhm between the 1-Wire data line

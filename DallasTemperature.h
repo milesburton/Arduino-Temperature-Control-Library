@@ -22,7 +22,7 @@
 #include <OneWire.h>
 
 // Model IDs
-#define DS18S20MODEL 0x10
+#define DS18S20MODEL 0x10  // also DS1820
 #define DS18B20MODEL 0x28
 #define DS1822MODEL  0x22
 #define DS1825MODEL  0x3B

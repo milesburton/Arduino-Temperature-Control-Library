@@ -408,10 +408,12 @@ float DallasTemperature::getTempFByIndex(uint8_t deviceIndex)
     return getTempF((uint8_t*)deviceAddress);
 }
 
-// reads scratchpad and returns the raw temperature (12bit)
+// reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
 int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress, uint8_t* scratchPad)
 {
-    int16_t rawTemperature = (((int16_t)scratchPad[TEMP_MSB]) << 8) | scratchPad[TEMP_LSB];
+    int16_t fpTemperature =
+        (((int16_t) scratchPad[TEMP_MSB]) << 11) |
+        (((int16_t) scratchPad[TEMP_LSB]) << 3);
 
     /*
     DS1820 and DS18S20 have a 9-bit temperature register.
@@ -439,17 +441,17 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress, ui
     */
 
     if (deviceAddress[0] == DS18S20MODEL)
-        rawTemperature = ((rawTemperature & 0xfffe) << 3) - 2 +
+        fpTemperature = ((fpTemperature & 0xfff0) << 3) - 16 +
             (
-                ((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 4) /
-                scratchPad[COUNT_PER_C]
+                ((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7) /
+                  scratchPad[COUNT_PER_C]
             );
 
-    return rawTemperature;
+    return fpTemperature;
 }
 
 
-// returns raw temperature in 1/16 degrees C or DEVICE_DISCONNECTED_RAW if the
+// returns temperature in 1/128 degrees C or DEVICE_DISCONNECTED_RAW if the
 // device's scratch pad cannot be read successfully.
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
@@ -647,22 +649,20 @@ bool DallasTemperature::alarmSearch(uint8_t* newAddr)
     return true;
 }
 
-// returns true if device address has an alarm condition
-// TODO: can this be done with only TEMP_MSB REGISTER (faster)
-//       if ((char) scratchPad[TEMP_MSB] <= (char) scratchPad[LOW_ALARM_TEMP]) return true;
-//       if ((char) scratchPad[TEMP_MSB] >= (char) scratchPad[HIGH_ALARM_TEMP]) return true;
+// returns true if device address might have an alarm condition
+// (only an alarm search can verify this)
 bool DallasTemperature::hasAlarm(const uint8_t* deviceAddress)
 {
     ScratchPad scratchPad;
     if (isConnected(deviceAddress, scratchPad))
     {
-        float temp = calculateTemperature(deviceAddress, scratchPad);
+        char temp = calculateTemperature(deviceAddress, scratchPad) >> 7;
 
         // check low alarm
-        if ((char)temp <= (char)scratchPad[LOW_ALARM_TEMP]) return true;
+        if (temp <= (char)scratchPad[LOW_ALARM_TEMP]) return true;
 
         // check high alarm
-        if ((char)temp >= (char)scratchPad[HIGH_ALARM_TEMP]) return true;
+        if (temp >= (char)scratchPad[HIGH_ALARM_TEMP]) return true;
     }
 
     // no alarm
@@ -720,8 +720,8 @@ float DallasTemperature::rawToCelsius(int16_t raw)
 {
     if (raw <= DEVICE_DISCONNECTED_RAW)
         return DEVICE_DISCONNECTED_C;
-    // C = RAW/16
-    return (float)raw * 0.0625;
+    // C = RAW/128
+    return (float)raw * 0.0078125;
 }
 
 // convert from raw to Fahrenheit
@@ -729,9 +729,9 @@ float DallasTemperature::rawToFahrenheit(int16_t raw)
 {
     if (raw <= DEVICE_DISCONNECTED_RAW)
         return DEVICE_DISCONNECTED_F;
-    // C = RAW/16
-    // F = (C*1.8)+32 = (RAW/16*1.8)+32 = (RAW*0.1125)+32
-    return ((float)raw * 0.1125) + 32;
+    // C = RAW/128
+    // F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
+    return ((float)raw * 0.0140625) + 32;
 }
 
 #if REQUIRESNEW

@@ -72,9 +72,6 @@ class DallasTemperature
   // returns the number of devices found on the bus
   uint8_t getDeviceCount(void);
   
-  // Is a conversion complete on the wire?
-  bool isConversionComplete(void);
-  
   // returns true if address is valid
   bool validAddress(const uint8_t*);
 

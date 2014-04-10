@@ -712,7 +712,7 @@ float DallasTemperature::toFahrenheit(float celsius)
 // Convert float Fahrenheit to Celsius
 float DallasTemperature::toCelsius(float fahrenheit)
 {
-    return (fahrenheit - 32) / 1.8;
+    return (fahrenheit - 32) * 0.555555556;
 }
 
 // convert from raw to Celsius

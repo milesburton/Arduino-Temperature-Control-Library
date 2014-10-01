@@ -1,0 +1,14 @@
+{
+  "name": "Arduino-DallasTemperature",
+  "keywords": "onewire, 1-wire, bus, sensor, temperature",
+  "description": "Arduino Library for Dallas Temperature ICs (DS18B20, DS18S20, DS1822, DS1820)",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/milesburton/Arduino-Temperature-Control-Library.git"
+  },
+  "dependencies":
+  [
+  	"Arduino-OneWire"
+  ]
+}

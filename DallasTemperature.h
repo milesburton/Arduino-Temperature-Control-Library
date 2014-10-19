@@ -64,7 +64,10 @@ class DallasTemperature
 {
   public:
 
+  DallasTemperature();
   DallasTemperature(OneWire*);
+
+  void setOneWire(OneWire*);
 
   // initialise bus
   void begin(void);

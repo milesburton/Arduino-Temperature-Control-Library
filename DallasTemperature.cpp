@@ -17,11 +17,15 @@ extern "C" {
 }
 #endif
 
+DallasTemperature::DallasTemperature() {}
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
 #if REQUIRESALARMS
     : _AlarmHandler(&defaultAlarmHandler)
 #endif
 {
+    setOneWire(_oneWire);
+}
+void DallasTemperature::setOneWire(OneWire* _oneWire){
     _wire = _oneWire;
     devices = 0;
     parasite = false;
@@ -29,7 +33,6 @@ DallasTemperature::DallasTemperature(OneWire* _oneWire)
     waitForConversion = true;
     checkForConversion = true;
 }
-
 // initialise the bus
 void DallasTemperature::begin(void)
 {

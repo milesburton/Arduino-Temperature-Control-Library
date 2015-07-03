@@ -1,6 +1,14 @@
 Arduino Library for Dallas Temperature ICs
 ==========================================
 
+=========MODIFICATIONS BY PRASHANT========
+An extra no arguments constructor to simplify multiple OneWire buse use, 
+allowing for easier construction of arrays of OneWire buses,
+in the limited environment provided by Arduino.
+See the Multibus_simple example illustrating a use-case of the extension.
+Use in conjunction with my modification of the OneWire library.
+=========END MODIFICATIONS BY PRASHANT========
+
 Usage
 -----
 

@@ -1,7 +1,7 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-#define DALLASTEMPLIBVERSION "3.7.2"
+#define DALLASTEMPLIBVERSION "3.7.3"
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,7 @@
 // Error Codes
 #define DEVICE_DISCONNECTED_C -127
 #define DEVICE_DISCONNECTED_F -196.6
-#define DEVICE_DISCONNECTED_RAW -2032
+#define DEVICE_DISCONNECTED_RAW -7040
 
 typedef uint8_t DeviceAddress[8];
 
@@ -64,7 +64,10 @@ class DallasTemperature
 {
   public:
 
+  DallasTemperature();
   DallasTemperature(OneWire*);
+
+  void setOneWire(OneWire*);
 
   // initialise bus
   void begin(void);
@@ -184,7 +187,17 @@ class DallasTemperature
   // The default alarm handler
   static void defaultAlarmHandler(const uint8_t*);
 
-  #endif
+  #endif 
+
+  // if no alarm handler is used the two bytes can be used as user data
+  // example of such usage is an ID.
+  // note if device is not connected it will fail writing the data. 
+  // note if address cannot be found no error will be reported.
+  // in short use carefully
+  void setUserData(const uint8_t*, int16_t );
+  void setUserDataByIndex(uint8_t, int16_t );
+  int16_t getUserData(const uint8_t* );
+  int16_t getUserDataByIndex(uint8_t );
 
   // convert from Celsius to Fahrenheit
   static float toFahrenheit(float);

@@ -17,11 +17,17 @@ extern "C" {
 }
 #endif
 
+DallasTemperature::DallasTemperature() {}
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
+
 #if REQUIRESALARMS
     : _AlarmHandler(&defaultAlarmHandler)
 #endif
 {
+    setOneWire(_oneWire);
+}
+
+void DallasTemperature::setOneWire(OneWire* _oneWire){
     _wire = _oneWire;
     devices = 0;
     parasite = false;
@@ -181,6 +187,7 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     _wire->select(deviceAddress); //<--this line was missing
     // save the newly written values to eeprom
     _wire->write(COPYSCRATCH, parasite);
+    delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet) 
     if (parasite) delay(10); // 10ms delay
     _wire->reset();
 }
@@ -702,6 +709,50 @@ void DallasTemperature::defaultAlarmHandler(const uint8_t* deviceAddress)
 }
 
 #endif
+
+// IF alarm is not used one can store a 16 bit int of userdata in the alarm 
+// registers. E.g. an ID of the sensor.
+// See github issue #29
+
+// note if device is not connected it will fail writing the data. 
+void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data)
+{
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad))
+    {
+        scratchPad[HIGH_ALARM_TEMP] = data >> 8;
+        scratchPad[LOW_ALARM_TEMP] = data & 255;
+        writeScratchPad(deviceAddress, scratchPad);
+    }
+}
+
+int16_t DallasTemperature::getUserData(const uint8_t* deviceAddress)
+{
+    int16_t data = 0;
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad)) 
+    {
+        data = scratchPad[HIGH_ALARM_TEMP] << 8;
+        data += scratchPad[LOW_ALARM_TEMP];
+    }
+    return data;
+}
+
+// note If address cannot be found no error will be reported.
+int16_t DallasTemperature::getUserDataByIndex(uint8_t deviceIndex)
+{
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, deviceIndex);
+    return getUserData((uint8_t*) deviceAddress);
+}
+
+void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data)
+{
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, deviceIndex);
+    setUserData((uint8_t*) deviceAddress, data);
+}
+
 
 // Convert float Celsius to Fahrenheit
 float DallasTemperature::toFahrenheit(float celsius)

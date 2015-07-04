@@ -21,7 +21,7 @@ DallasTemperature::DallasTemperature() {}
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
 
 #if REQUIRESALARMS
-    : _AlarmHandler(&defaultAlarmHandler)
+: _AlarmHandler(&defaultAlarmHandler)
 #endif
 {
     setOneWire(_oneWire);
@@ -101,19 +101,22 @@ bool DallasTemperature::isConnected(const uint8_t* deviceAddress)
 // also allows for updating the read scratchpad
 bool DallasTemperature::isConnected(const uint8_t* deviceAddress, uint8_t* scratchPad)
 {
-    readScratchPad(deviceAddress, scratchPad);
-    return (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
+    bool b = readScratchPad(deviceAddress, scratchPad);
+    return b && (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 
 // read device's scratch pad
-void DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad)
+// returns false if it fails to reset the Wire bus
+bool DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad)
 {
-    // send the command
-    _wire->reset();
+    // send the reset command and fail fast
+    int b = _wire->reset();
+    if (b == 0) return false;
+
     _wire->select(deviceAddress);
     _wire->write(READSCRATCH);
 
-    // TODO => collect all comments &  use simple loop
+    // Read all registers in a simple loop
     // byte 0: temperature LSB
     // byte 1: temperature MSB
     // byte 2: high alarm temp
@@ -126,52 +129,15 @@ void DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* sc
     // byte 7: DS18S20: COUNT_PER_C
     //         DS18B20 & DS1822: store for crc
     // byte 8: SCRATCHPAD_CRC
-    //
-    // for(int i=0; i<9; i++)
-    // {
-    //   scratchPad[i] = _wire->read();
-    // }
+    for(uint8_t i = 0; i < 9; i++)
+    {
+        scratchPad[i] = _wire->read();
+    }
 
-
-    // read the response
-
-    // byte 0: temperature LSB
-    scratchPad[TEMP_LSB] = _wire->read();
-
-    // byte 1: temperature MSB
-    scratchPad[TEMP_MSB] = _wire->read();
-
-    // byte 2: high alarm temp
-    scratchPad[HIGH_ALARM_TEMP] = _wire->read();
-
-    // byte 3: low alarm temp
-    scratchPad[LOW_ALARM_TEMP] = _wire->read();
-
-    // byte 4:
-    // DS18S20: store for crc
-    // DS18B20 & DS1822: configuration register
-    scratchPad[CONFIGURATION] = _wire->read();
-
-    // byte 5:
-    // internal use & crc
-    scratchPad[INTERNAL_BYTE] = _wire->read();
-
-    // byte 6:
-    // DS18S20: COUNT_REMAIN
-    // DS18B20 & DS1822: store for crc
-    scratchPad[COUNT_REMAIN] = _wire->read();
-
-    // byte 7:
-    // DS18S20: COUNT_PER_C
-    // DS18B20 & DS1822: store for crc
-    scratchPad[COUNT_PER_C] = _wire->read();
-
-    // byte 8:
-    // SCTRACHPAD_CRC
-    scratchPad[SCRATCHPAD_CRC] = _wire->read();
-
-    _wire->reset();
+    b = _wire->reset();
+    return (b == 1);
 }
+
 
 // writes device's scratch pad
 void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint8_t* scratchPad)
@@ -187,7 +153,7 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     _wire->select(deviceAddress); //<--this line was missing
     // save the newly written values to eeprom
     _wire->write(COPYSCRATCH, parasite);
-    delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet) 
+    delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
     if (parasite) delay(10); // 10ms delay
     _wire->reset();
 }
@@ -402,7 +368,7 @@ float DallasTemperature::getTempCByIndex(uint8_t deviceIndex)
 {
     DeviceAddress deviceAddress;
     if (!getAddress(deviceAddress, deviceIndex))
-        return DEVICE_DISCONNECTED_C;
+    return DEVICE_DISCONNECTED_C;
     return getTempC((uint8_t*)deviceAddress);
 }
 
@@ -411,7 +377,7 @@ float DallasTemperature::getTempFByIndex(uint8_t deviceIndex)
 {
     DeviceAddress deviceAddress;
     if (!getAddress(deviceAddress, deviceIndex))
-        return DEVICE_DISCONNECTED_F;
+    return DEVICE_DISCONNECTED_F;
     return getTempF((uint8_t*)deviceAddress);
 }
 
@@ -419,8 +385,8 @@ float DallasTemperature::getTempFByIndex(uint8_t deviceIndex)
 int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress, uint8_t* scratchPad)
 {
     int16_t fpTemperature =
-        (((int16_t) scratchPad[TEMP_MSB]) << 11) |
-        (((int16_t) scratchPad[TEMP_LSB]) << 3);
+    (((int16_t) scratchPad[TEMP_MSB]) << 11) |
+    (((int16_t) scratchPad[TEMP_LSB]) << 3);
 
     /*
     DS1820 and DS18S20 have a 9-bit temperature register.
@@ -448,11 +414,11 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress, ui
     */
 
     if (deviceAddress[0] == DS18S20MODEL)
-        fpTemperature = ((fpTemperature & 0xfff0) << 3) - 16 +
-            (
-                ((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7) /
-                  scratchPad[COUNT_PER_C]
-            );
+    fpTemperature = ((fpTemperature & 0xfff0) << 3) - 16 +
+    (
+    ((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7) /
+    scratchPad[COUNT_PER_C]
+    );
 
     return fpTemperature;
 }
@@ -505,7 +471,7 @@ ALARMS:
 TH and TL Register Format
 
 BIT 7 BIT 6 BIT 5 BIT 4 BIT 3 BIT 2 BIT 1 BIT 0
-  S    2^6   2^5   2^4   2^3   2^2   2^1   2^0
+S    2^6   2^5   2^4   2^3   2^2   2^1   2^0
 
 Only bits 11 through 4 of the temperature register are used
 in the TH and TL comparison since TH and TL are 8-bit
@@ -576,7 +542,7 @@ void DallasTemperature::resetAlarmSearch()
     alarmSearchJunction = -1;
     alarmSearchExhausted = 0;
     for(uint8_t i = 0; i < 7; i++)
-        alarmSearchAddress[i] = 0;
+    alarmSearchAddress[i] = 0;
 }
 
 // This is a modified version of the OneWire::search method.
@@ -693,7 +659,7 @@ void DallasTemperature::processAlarms(void)
     while (alarmSearch(alarmAddr))
     {
         if (validAddress(alarmAddr))
-            _AlarmHandler(alarmAddr);
+        _AlarmHandler(alarmAddr);
     }
 }
 
@@ -710,11 +676,11 @@ void DallasTemperature::defaultAlarmHandler(const uint8_t* deviceAddress)
 
 #endif
 
-// IF alarm is not used one can store a 16 bit int of userdata in the alarm 
+// IF alarm is not used one can store a 16 bit int of userdata in the alarm
 // registers. E.g. an ID of the sensor.
 // See github issue #29
 
-// note if device is not connected it will fail writing the data. 
+// note if device is not connected it will fail writing the data.
 void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data)
 {
     ScratchPad scratchPad;
@@ -730,7 +696,7 @@ int16_t DallasTemperature::getUserData(const uint8_t* deviceAddress)
 {
     int16_t data = 0;
     ScratchPad scratchPad;
-    if (isConnected(deviceAddress, scratchPad)) 
+    if (isConnected(deviceAddress, scratchPad))
     {
         data = scratchPad[HIGH_ALARM_TEMP] << 8;
         data += scratchPad[LOW_ALARM_TEMP];
@@ -770,7 +736,7 @@ float DallasTemperature::toCelsius(float fahrenheit)
 float DallasTemperature::rawToCelsius(int16_t raw)
 {
     if (raw <= DEVICE_DISCONNECTED_RAW)
-        return DEVICE_DISCONNECTED_C;
+    return DEVICE_DISCONNECTED_C;
     // C = RAW/128
     return (float)raw * 0.0078125;
 }
@@ -779,7 +745,7 @@ float DallasTemperature::rawToCelsius(int16_t raw)
 float DallasTemperature::rawToFahrenheit(int16_t raw)
 {
     if (raw <= DEVICE_DISCONNECTED_RAW)
-        return DEVICE_DISCONNECTED_F;
+    return DEVICE_DISCONNECTED_F;
     // C = RAW/128
     // F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
     return ((float)raw * 0.0140625) + 32;

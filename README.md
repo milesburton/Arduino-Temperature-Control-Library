@@ -1,16 +1,6 @@
-Arduino Library for Dallas Temperature ICs
-==========================================
+# Arduino Library for Dallas Temperature ICs 
 
-=========MODIFICATIONS BY PRASHANT========
-An extra no arguments constructor to simplify multiple OneWire buse use, 
-allowing for easier construction of arrays of OneWire buses,
-in the limited environment provided by Arduino.
-See the Multibus_simple example illustrating a use-case of the extension.
-Use in conjunction with my modification of the OneWire library.
-=========END MODIFICATIONS BY PRASHANT========
-
-Usage
------
+## Usage
 
 This library supports the following devices :
 
@@ -40,8 +30,7 @@ or
 at the top of DallasTemperature.h
 
 
-Credits
--------
+## Credits
 
 The OneWire code has been derived from
 http://www.arduino.cc/playground/Learning/OneWire.
@@ -52,14 +41,13 @@ Guil Barros [gfbarros@bappos.com] added getTempByAddress (v3.5)
 Rob Tillaart [rob.tillaart@gmail.com] added async modus (v3.7.0)
 
 
-Website
--------
+## Website
+
 
 You can find the latest version of the library at
 http://milesburton.com/index.php?title=Dallas_Temperature_Control_Library
 
-License
--------
+# License
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public

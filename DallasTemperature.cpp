@@ -340,19 +340,52 @@ void DallasTemperature::requestTemperatures()
 // returns TRUE  otherwise
 bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress)
 {
+    uint8_t bitResolution = getResolution(deviceAddress);
+    if (bitResolution == 0) return false; //Device disconnected
+
     _wire->reset();
     _wire->select(deviceAddress);
     _wire->write(STARTCONVO, parasite);
 
-    // check device
-    ScratchPad scratchPad;
-    if (!isConnected(deviceAddress, scratchPad)) return false;
 
     // ASYNC mode?
     if (!waitForConversion) return true;
+
     blockTillConversionComplete(getResolution(deviceAddress), deviceAddress);
 
-    return true;
+
+  return true;
+}
+
+
+void DallasTemperature::blockTillConversionComplete(uint8_t* bitResolution, uint8_t* deviceAddress)
+{
+	if(deviceAddress != 0 && checkForConversion && !parasite)
+	{
+	  	// Continue to check if the IC has responded with a temperature
+	  	// NB: Could cause issues with multiple devices (one device may respond faster)
+	  	unsigned long start = millis();
+		while(!isConversionAvailable(0) && ((millis() - start) < 750));	
+	}
+	
+  	// Wait a fix number of cycles till conversion is complete (based on IC datasheet)
+	  switch (*bitResolution)
+	  {
+	    case 9:
+	      delay(94);
+	      break;
+	    case 10:
+	      delay(188);
+	      break;
+	    case 11:
+	      delay(375);
+	      break;
+	    case 12:
+	    default:
+	      delay(750);
+	      break;
+	  }
+
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)

@@ -9,6 +9,7 @@
 
 #include "DallasTemperature.h"
 
+
 #if ARDUINO >= 100
 #include "Arduino.h"
 #else
@@ -107,7 +108,7 @@ bool DallasTemperature::isConnected(const uint8_t* deviceAddress, uint8_t* scrat
     return b && (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 
-void DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad){
+bool DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad){
 
     // send the reset command and fail fast
     int b = _wire->reset();
@@ -334,31 +335,16 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 }
 
 
-void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, uint8_t* deviceAddress)
-{
-    if(deviceAddress != 0 && checkForConversion && !parasite){
-        // Continue to check if the IC has responded with a temperature
-        // NB: Could cause issues with multiple devices (one device may respond faster)
-        unsigned long start = millis();
-        while(!isConversionAvailable(0) && ((millis() - start) < 750));
-    }
+// Continue to check if the IC has responded with a temperature
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const uint8_t* deviceAddress){
 
-    // Wait a fix number of cycles till conversion is complete (based on IC datasheet)
-      switch (*bitResolution){
-        case 9:
-          delay(94);
-          break;
-        case 10:
-          delay(188);
-          break;
-        case 11:
-          delay(375);
-          break;
-        case 12:
-        default:
-          delay(750);
-          break;
-      }
+    int delms = millisToWaitForConversion(bitResolution);
+    if (deviceAddress != NULL && checkForConversion && !parasite){
+        unsigned long timend = millis() + delms;
+        while(!isConversionAvailable(deviceAddress) && (millis() < timend));
+    }else{
+        delay(delms);
+    }
 
 }
 
@@ -378,18 +364,6 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
 }
 
-// Continue to check if the IC has responded with a temperature
-void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const uint8_t* deviceAddress){
-
-    int delms = millisToWaitForConversion(bitResolution);
-    if (deviceAddress != NULL && checkForConversion && !parasite){
-        unsigned long timend = millis() + delms;
-        while(!isConversionAvailable(deviceAddress) && (millis() < timend));
-    }else{
-        delay(delms);
-    }
-
-}
 
 // sends command for one device to perform a temp conversion by index
 bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex){
@@ -504,6 +478,82 @@ float DallasTemperature::getTempF(const uint8_t* deviceAddress){
 // returns true if the bus requires parasite power
 bool DallasTemperature::isParasitePowerMode(void){
     return parasite;
+}
+
+
+// IF alarm is not used one can store a 16 bit int of userdata in the alarm
+// registers. E.g. an ID of the sensor.
+// See github issue #29
+
+// note if device is not connected it will fail writing the data.
+void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data)
+{
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad))
+    {
+        scratchPad[HIGH_ALARM_TEMP] = data >> 8;
+        scratchPad[LOW_ALARM_TEMP] = data & 255;
+        writeScratchPad(deviceAddress, scratchPad);
+    }
+}
+
+int16_t DallasTemperature::getUserData(const uint8_t* deviceAddress)
+{
+    int16_t data = 0;
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad))
+    {
+        data = scratchPad[HIGH_ALARM_TEMP] << 8;
+        data += scratchPad[LOW_ALARM_TEMP];
+    }
+    return data;
+}
+
+// note If address cannot be found no error will be reported.
+int16_t DallasTemperature::getUserDataByIndex(uint8_t deviceIndex)
+{
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, deviceIndex);
+    return getUserData((uint8_t*) deviceAddress);
+}
+
+void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data)
+{
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, deviceIndex);
+    setUserData((uint8_t*) deviceAddress, data);
+}
+
+
+// Convert float Celsius to Fahrenheit
+float DallasTemperature::toFahrenheit(float celsius){
+    return (celsius * 1.8) + 32;
+}
+
+// Convert float Fahrenheit to Celsius
+float DallasTemperature::toCelsius(float fahrenheit){
+    return (fahrenheit - 32) * 0.555555556;
+}
+
+// convert from raw to Celsius
+float DallasTemperature::rawToCelsius(int16_t raw){
+
+    if (raw <= DEVICE_DISCONNECTED_RAW)
+    return DEVICE_DISCONNECTED_C;
+    // C = RAW/128
+    return (float)raw * 0.0078125;
+
+}
+
+// convert from raw to Fahrenheit
+float DallasTemperature::rawToFahrenheit(int16_t raw){
+
+    if (raw <= DEVICE_DISCONNECTED_RAW)
+    return DEVICE_DISCONNECTED_F;
+    // C = RAW/128
+    // F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
+    return ((float)raw * 0.0140625) + 32;
+
 }
 
 #if REQUIRESALARMS
@@ -719,81 +769,6 @@ void DallasTemperature::setAlarmHandler(AlarmHandler *handler){
 void DallasTemperature::defaultAlarmHandler(const uint8_t* deviceAddress){}
 
 #endif
-
-// IF alarm is not used one can store a 16 bit int of userdata in the alarm
-// registers. E.g. an ID of the sensor.
-// See github issue #29
-
-// note if device is not connected it will fail writing the data.
-void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data)
-{
-    ScratchPad scratchPad;
-    if (isConnected(deviceAddress, scratchPad))
-    {
-        scratchPad[HIGH_ALARM_TEMP] = data >> 8;
-        scratchPad[LOW_ALARM_TEMP] = data & 255;
-        writeScratchPad(deviceAddress, scratchPad);
-    }
-}
-
-int16_t DallasTemperature::getUserData(const uint8_t* deviceAddress)
-{
-    int16_t data = 0;
-    ScratchPad scratchPad;
-    if (isConnected(deviceAddress, scratchPad))
-    {
-        data = scratchPad[HIGH_ALARM_TEMP] << 8;
-        data += scratchPad[LOW_ALARM_TEMP];
-    }
-    return data;
-}
-
-// note If address cannot be found no error will be reported.
-int16_t DallasTemperature::getUserDataByIndex(uint8_t deviceIndex)
-{
-    DeviceAddress deviceAddress;
-    getAddress(deviceAddress, deviceIndex);
-    return getUserData((uint8_t*) deviceAddress);
-}
-
-void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data)
-{
-    DeviceAddress deviceAddress;
-    getAddress(deviceAddress, deviceIndex);
-    setUserData((uint8_t*) deviceAddress, data);
-}
-
-
-// Convert float Celsius to Fahrenheit
-float DallasTemperature::toFahrenheit(float celsius){
-    return (celsius * 1.8) + 32;
-}
-
-// Convert float Fahrenheit to Celsius
-float DallasTemperature::toCelsius(float fahrenheit){
-    return (fahrenheit - 32) * 0.555555556;
-}
-
-// convert from raw to Celsius
-float DallasTemperature::rawToCelsius(int16_t raw){
-
-    if (raw <= DEVICE_DISCONNECTED_RAW)
-    return DEVICE_DISCONNECTED_C;
-    // C = RAW/128
-    return (float)raw * 0.0078125;
-
-}
-
-// convert from raw to Fahrenheit
-float DallasTemperature::rawToFahrenheit(int16_t raw){
-
-    if (raw <= DEVICE_DISCONNECTED_RAW)
-    return DEVICE_DISCONNECTED_F;
-    // C = RAW/128
-    // F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
-    return ((float)raw * 0.0140625) + 32;
-
-}
 
 #if REQUIRESNEW
 

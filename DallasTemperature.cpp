@@ -334,7 +334,7 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 }
 
 
-void DallasTemperature::blockTillConversionComplete(uint8_t* bitResolution, uint8_t* deviceAddress)
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, uint8_t* deviceAddress)
 {
     if(deviceAddress != 0 && checkForConversion && !parasite){
         // Continue to check if the IC has responded with a temperature

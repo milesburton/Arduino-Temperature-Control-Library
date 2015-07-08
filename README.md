@@ -1,4 +1,4 @@
-# Arduino Library for Dallas Temperature ICs 
+# Arduino Library for Maxim Temperature Integrated Circuits
 
 ## Usage
 

@@ -328,7 +328,7 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
     // ASYNC mode?
     if (!waitForConversion) return true;
 
-    blockTillConversionComplete(getResolution(deviceAddress), deviceAddress);
+    blockTillConversionComplete(bitResolution, deviceAddress);
 
     return true;
 

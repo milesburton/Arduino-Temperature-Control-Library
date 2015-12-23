@@ -126,7 +126,7 @@ public:
     // sends command for one device to perform a temperature conversion by index
     bool requestTemperaturesByIndex(uint8_t);
 
-    // returns temperature raw value (12 bit integer of 1/16 degrees C)
+    // returns temperature raw value (12 bit integer of 1/128 degrees C)
     int16_t getTemp(const uint8_t*);
 
     // returns temperature in degrees C

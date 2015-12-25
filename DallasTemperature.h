@@ -66,8 +66,11 @@ public:
 
     DallasTemperature();
     DallasTemperature(OneWire*);
+	DallasTemperature(OneWire*, uint8_t);
 
     void setOneWire(OneWire*);
+	
+	void setPullupPin(uint8_t);
 
     // initialise bus
     void begin(void);
@@ -145,6 +148,10 @@ public:
     bool isParasitePowerMode(void);
 
     bool isConversionAvailable(const uint8_t*);
+	
+	// external pullup control
+	void activateExternalPullup(void);
+	void deactivateExternalPullup(void);
 
 #if REQUIRESALARMS
 
@@ -226,6 +233,10 @@ private:
 
     // parasite power on or off
     bool parasite;
+	
+	// external pullup
+	bool useExternalPullup;
+	uint8_t pullupPin;
 
     // used to determine the delay amount needed to allow for the
     // temperature conversion to take place

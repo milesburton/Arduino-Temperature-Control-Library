@@ -18,16 +18,31 @@ extern "C" {
 }
 #endif
 
-DallasTemperature::DallasTemperature() {}
-DallasTemperature::DallasTemperature(OneWire* _oneWire)
-
+DallasTemperature::DallasTemperature() 
 #if REQUIRESALARMS
 : _AlarmHandler(&defaultAlarmHandler)
-#endif
+#endif 
+{
+	useExternalPullup = false;
+}
+
+DallasTemperature::DallasTemperature(OneWire* _oneWire) : DallasTemperature()
 {
     setOneWire(_oneWire);
 }
 
+DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire)
+{
+    setPullupPin(_pullupPin);
+}
+
+void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
+	useExternalPullup = true; 
+	pullupPin = _pullupPin;
+	pinMode(pullupPin, OUTPUT);
+	deactivateExternalPullup();
+}
+	
 void DallasTemperature::setOneWire(OneWire* _oneWire){
 
     _wire = _oneWire;
@@ -36,7 +51,6 @@ void DallasTemperature::setOneWire(OneWire* _oneWire){
     bitResolution = 9;
     waitForConversion = true;
     checkForConversion = true;
-
 }
 
 // initialise the bus
@@ -155,9 +169,12 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
 
     // save the newly written values to eeprom
     _wire->write(COPYSCRATCH, parasite);
-    delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
 
-    if (parasite) delay(10); // 10ms delay
+    if (parasite) {
+		activateExternalPullup();
+		delay(10); // 10ms delay	
+		deactivateExternalPullup();
+	}
     _wire->reset();
 
 }
@@ -303,8 +320,8 @@ void DallasTemperature::requestTemperatures(){
 
     // ASYNC mode?
     if (!waitForConversion) return;
-    blockTillConversionComplete(bitResolution, NULL);
 
+    blockTillConversionComplete(bitResolution, NULL);
 }
 
 // sends command for one device to perform a temperature by address
@@ -327,11 +344,9 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 
     // ASYNC mode?
     if (!waitForConversion) return true;
-
+		
     blockTillConversionComplete(bitResolution, deviceAddress);
-
     return true;
-
 }
 
 
@@ -343,7 +358,9 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const
         unsigned long now = millis();
         while(!isConversionAvailable(deviceAddress) && (millis() - delms < now));
     } else {
+		activateExternalPullup();
         delay(delms);
+		deactivateExternalPullup();
     }
     
 }
@@ -364,6 +381,15 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
 }
 
+void DallasTemperature::activateExternalPullup() {
+	if(useExternalPullup)
+		digitalWrite(pullupPin, LOW);
+}
+
+void DallasTemperature::deactivateExternalPullup() {
+	if(useExternalPullup)
+		digitalWrite(pullupPin, HIGH);
+}
 
 // sends command for one device to perform a temp conversion by index
 bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex){

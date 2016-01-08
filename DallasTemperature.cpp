@@ -28,6 +28,18 @@ DallasTemperature::DallasTemperature(OneWire* _oneWire)
     setOneWire(_oneWire);
 }
 
+bool DallasTemperature::validFamily(const uint8_t* deviceAddress){
+    switch (deviceAddress[0]){
+        case DS18S20MODEL:
+        case DS18B20MODEL:
+        case DS1822MODEL:
+        case DS1825MODEL:
+            return true;
+        default:
+            return false;
+    }
+}
+
 void DallasTemperature::setOneWire(OneWire* _oneWire){
 
     _wire = _oneWire;

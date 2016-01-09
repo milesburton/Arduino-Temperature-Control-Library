@@ -78,6 +78,9 @@ public:
     // returns true if address is valid
     bool validAddress(const uint8_t*);
 
+    // returns true if address is of the family of sensors the lib supports.
+    bool validFamily(const uint8_t* deviceAddress);
+
     // finds an address at a given index on the bus
     bool getAddress(uint8_t*, uint8_t);
 

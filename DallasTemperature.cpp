@@ -302,6 +302,12 @@ bool DallasTemperature::isConversionAvailable(const uint8_t* deviceAddress){
 
 }
 
+bool DallasTemperature::isConversionComplete()
+{
+   uint8_t b = _wire->read_bit();
+   return (b == 1);
+}
+
 // sends command for all devices on the bus to perform a temperature conversion
 void DallasTemperature::requestTemperatures(){
 

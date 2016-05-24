@@ -65,10 +65,6 @@ void DallasTemperature::begin(void){
 
             if (!parasite && readPowerSupply(deviceAddress)) parasite = true;
 
-            ScratchPad scratchPad;
-
-            readScratchPad(deviceAddress, scratchPad);
-
             bitResolution = max(bitResolution, getResolution(deviceAddress));
 
             devices++;

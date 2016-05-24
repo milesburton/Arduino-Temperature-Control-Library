@@ -162,6 +162,7 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     _wire->select(deviceAddress);
 
     // save the newly written values to eeprom
+    _wire->select(deviceAddress);
     _wire->write(COPYSCRATCH, parasite);
     delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
 

@@ -148,6 +148,9 @@ public:
     bool isParasitePowerMode(void);
 
     bool isConversionAvailable(const uint8_t*);
+    
+     // Is a conversion complete on the wire?
+    bool isConversionComplete(void);
 
 #if REQUIRESALARMS
 

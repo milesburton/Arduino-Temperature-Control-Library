@@ -419,6 +419,30 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
 }
 
+void DallasTemperature::waitForCommandCompletion(bool parasite, bool forceDelay, int16_t maxTime) {
+	if (parasite || forceDelay) {
+		// Cannot poll (or don't want to)
+		delay(maxTime + 1); // +1 to insure we delay at least maxTime
+		if (parasite)
+			_wire->depower(); // bus was being pulled high
+	} else {
+		// something is wrong if conversion takes more than maxTime
+		unsigned long start = millis();
+		unsigned long timeout = maxTime + 1;
+
+		for (;;) {
+			if (isConversionComplete())
+				break; // done
+
+			unsigned long now = millis();
+			if (now - start > timeout)
+				break; // timeout
+
+				yield();
+		}
+	}
+}
+
 
 // sends command for one device to perform a temp conversion by index
 bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex){

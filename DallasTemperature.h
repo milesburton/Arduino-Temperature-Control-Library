@@ -257,6 +257,10 @@ private:
 
     void	blockTillConversionComplete(uint8_t bitResolution);
 
+    // If parasite or forceDelay, delay(maxTime); otherwise, use read time slots
+    // to poll bus until command is complete
+    void waitForCommandCompletion(bool parasite, bool forceDelay, int16_t maxTime);
+
 #if REQUIRESALARMS
 
     // required for alarmSearch

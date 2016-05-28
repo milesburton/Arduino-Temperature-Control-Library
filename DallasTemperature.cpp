@@ -296,10 +296,11 @@ bool DallasTemperature::getCheckForConversion(){
     return checkForConversion;
 }
 
-bool DallasTemperature::isConversionComplete()
-{
-   uint8_t b = _wire->read_bit();
-   return (b == 1);
+bool DallasTemperature::isConversionComplete() {
+	// Target(s) pull bus low during an extended operation to indicate it is still in progress; when bus is
+	// not pulled low (ie: when bus is high), the operation is complete
+	bool complete = _wire->read_bit();
+	return complete;
 }
 
 // sends command for all devices on the bus to perform a temperature conversion

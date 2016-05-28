@@ -67,14 +67,13 @@ void DallasTemperature::begin(void){
 
         if (validAddress(deviceAddress)){
 
-            if (!parasite && readPowerSupply(deviceAddress)) parasite = true;
-
             bitResolution = max(bitResolution, getResolution(deviceAddress));
 
             devices++;
         }
     }
 
+    parasite = parasite || readPowerSupply();
 }
 
 // returns the number of devices found on the bus

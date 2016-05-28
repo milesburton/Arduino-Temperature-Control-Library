@@ -20,6 +20,7 @@ const int16_t MaxConversionTime_10Bits = 188;
 const int16_t MaxConversionTime_11Bits = 375;
 const int16_t MaxConversionTime_12Bits = 750;
 const int16_t MaxConversionTime = MaxConversionTime_12Bits;
+const int16_t MaxTime_CopyScratchpad = 10; // ms
 }
 
 DallasTemperature::DallasTemperature() {}
@@ -169,9 +170,8 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     _wire->reset();
     _wire->select(deviceAddress);
     _wire->write(COPYSCRATCH, parasite);
-    delay(20);  // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
+    waitForCommandCompletion(parasite, false, MaxTime_CopyScratchpad);
 
-    if (parasite) delay(10); // 10ms delay
     _wire->reset();
 
 }
@@ -370,37 +370,14 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 
 // Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution){
-    
-	// If user did not disable checking for conversion, and we are bus powered, use read time slots
+	bool forceDelay = !checkForConversion;
+	int16_t maxTime;
+	if (parasite || forceDelay)
+		maxTime = millisToWaitForConversion(bitResolution);
+	else
+		maxTime = MaxConversionTime;
 
-	if (checkForConversion && !parasite) {
-
-		// something is wrong if conversion takes more than MaxConversionTime
-		unsigned long start = millis();
-		unsigned long timeout = MaxConversionTime * 1.1;
-
-		for (;;) {
-			if (isConversionComplete())
-				break; // done
-
-			unsigned long now = millis();
-			if (now - start > timeout)
-				break; // timeout
-
-			yield();
-		}
-
-	} else {
-
-		// block until worst case conversion is complete
-		int ms = millisToWaitForConversion(bitResolution);
-		delay(ms);
-
-		if (parasite)
-			_wire->depower(); // write(*, true) held the bus HIGH for parasite power
-
-	}
-    
+	waitForCommandCompletion(parasite, forceDelay, maxTime);
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
@@ -424,7 +401,7 @@ void DallasTemperature::waitForCommandCompletion(bool parasite, bool forceDelay,
 		// Cannot poll (or don't want to)
 		delay(maxTime + 1); // +1 to insure we delay at least maxTime
 		if (parasite)
-			_wire->depower(); // bus was being pulled high
+			_wire->depower(); // write(*, true) held the bus HIGH for parasite power
 	} else {
 		// something is wrong if conversion takes more than maxTime
 		unsigned long start = millis();
@@ -438,7 +415,7 @@ void DallasTemperature::waitForCommandCompletion(bool parasite, bool forceDelay,
 			if (now - start > timeout)
 				break; // timeout
 
-				yield();
+			yield();
 		}
 	}
 }

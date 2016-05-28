@@ -68,7 +68,8 @@ void DallasTemperature::begin(void){
 
         if (validAddress(deviceAddress)){
 
-            bitResolution = max(bitResolution, getResolution(deviceAddress));
+			uint8_t res = getResolution(deviceAddress);
+			bitResolution = max(bitResolution, res);
 
             devices++;
         }

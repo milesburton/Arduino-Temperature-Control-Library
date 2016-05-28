@@ -88,19 +88,23 @@ bool DallasTemperature::validAddress(const uint8_t* deviceAddress){
 
 // finds an address at a given index on the bus
 // returns true if the device was found
-bool DallasTemperature::getAddress(uint8_t* deviceAddress, uint8_t index){
+bool DallasTemperature::getAddress(uint8_t* deviceAddress, uint8_t index) {
 
-    uint8_t depth = 0;
+	uint8_t device = 0;
+	_wire->reset_search();
 
-    _wire->reset_search();
+	while (_wire->search(deviceAddress)) {
+		if (validAddress(deviceAddress)) {
+			// Recognized a device
 
-    while (depth <= index && _wire->search(deviceAddress)) {
-        if (depth == index && validAddress(deviceAddress)) return true;
-        depth++;
-    }
+			if (device == index)
+				return true; // found target
 
-    return false;
+			device++;
+		}
+	}
 
+	return false;
 }
 
 // attempt to determine if the device at the given address is connected to the bus

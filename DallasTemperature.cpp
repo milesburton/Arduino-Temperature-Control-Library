@@ -329,10 +329,17 @@ void DallasTemperature::requestTemperatures(){
 // returns TRUE  otherwise
 bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress){
 
-    uint8_t bitResolution = getResolution(deviceAddress);
-    if (bitResolution == 0){
-     return false; //Device disconnected
-    }
+    uint8_t bitResolution;
+    bool needsBitResolution = waitForConversion && !( checkForConversion && !parasite );
+
+    if (needsBitResolution) {
+		bitResolution = getResolution(deviceAddress);
+		if (bitResolution == 0) {
+			return false; //Device disconnected
+		}
+	} else {
+		bitResolution = 0; // unused
+	}
 
     if (_wire->reset() == 0){
         return false;
@@ -340,7 +347,6 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 
     _wire->select(deviceAddress);
     _wire->write(STARTCONVO, parasite);
-
 
     // ASYNC mode?
     if (!waitForConversion) return true;

@@ -15,11 +15,11 @@ extern "C" {
 #endif
 
 namespace {
-const int16_t MaxConversionTime_9Bits = 94;
-const int16_t MaxConversionTime_10Bits = 188;
-const int16_t MaxConversionTime_11Bits = 375;
-const int16_t MaxConversionTime_12Bits = 750;
-const int16_t MaxConversionTime = MaxConversionTime_12Bits;
+const int16_t MaxTime_Conversion_9Bits = 94;
+const int16_t MaxTime_Conversion_10Bits = 188;
+const int16_t MaxTime_Conversion_11Bits = 375;
+const int16_t MaxTime_Conversion_12Bits = 750;
+const int16_t MaxTime_Conversion = MaxTime_Conversion_12Bits;
 const int16_t MaxTime_CopyScratchpad = 10; // ms
 }
 
@@ -375,7 +375,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution){
 	if (parasite || forceDelay)
 		maxTime = millisToWaitForConversion(bitResolution);
 	else
-		maxTime = MaxConversionTime;
+		maxTime = MaxTime_Conversion;
 
 	waitForCommandCompletion(parasite, forceDelay, maxTime);
 }
@@ -385,13 +385,13 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
     switch (bitResolution){
     case 9:
-        return MaxConversionTime_9Bits;
+        return MaxTime_Conversion_9Bits;
     case 10:
-        return MaxConversionTime_10Bits;
+        return MaxTime_Conversion_10Bits;
     case 11:
-        return MaxConversionTime_11Bits;
+        return MaxTime_Conversion_11Bits;
     default:
-        return MaxConversionTime_12Bits;
+        return MaxTime_Conversion_12Bits;
     }
 
 }

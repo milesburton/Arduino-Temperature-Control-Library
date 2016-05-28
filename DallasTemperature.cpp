@@ -347,13 +347,32 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 // Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const uint8_t* deviceAddress){
     
-    int delms = millisToWaitForConversion(bitResolution);
-    if (deviceAddress != NULL && checkForConversion && !parasite){
-        unsigned long now = millis();
-        while(!isConversionAvailable(deviceAddress) && (millis() - delms < now));
-    } else {
-        delay(delms);
-    }
+	// If user did not disable checking for conversion, and we are bus powered, use read time slots
+
+	if (checkForConversion && !parasite) {
+
+		// something is wrong if conversion takes more than 750ms
+		unsigned long start = millis();
+		unsigned long timeout = 750 * 1.1;
+
+		for (;;) {
+			if (isConversionComplete())
+				break; // done
+
+			unsigned long now = millis();
+			if (now - start > timeout)
+				break; // timeout
+
+			yield();
+		}
+
+	} else {
+
+		// block until worst case conversion is complete
+		int ms = millisToWaitForConversion(bitResolution);
+		delay(ms);
+
+	}
     
 }
 

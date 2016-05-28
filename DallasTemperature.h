@@ -147,8 +147,6 @@ public:
     // returns true if the bus requires parasite power
     bool isParasitePowerMode(void);
 
-    bool isConversionAvailable(const uint8_t*);
-    
      // Is a conversion complete on the wire?
     bool isConversionComplete(void);
 
@@ -254,7 +252,7 @@ private:
 
     int16_t millisToWaitForConversion(uint8_t);
 
-    void	blockTillConversionComplete(uint8_t, const uint8_t*);
+    void	blockTillConversionComplete(uint8_t bitResolution);
 
 #if REQUIRESALARMS
 

@@ -305,13 +305,14 @@ bool DallasTemperature::isConversionComplete()
 // sends command for all devices on the bus to perform a temperature conversion
 void DallasTemperature::requestTemperatures(){
 
-    _wire->reset();
+    if (!_wire->reset()) {
+    	// bus error
+    }
     _wire->skip();
     _wire->write(STARTCONVO, parasite);
 
-    // ASYNC mode?
-    if (!waitForConversion) return;
-    blockTillConversionComplete(bitResolution);
+	if (waitForConversion)
+		blockTillConversionComplete(bitResolution);
 
 }
 
@@ -332,17 +333,14 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 		bitResolution = 0; // unused
 	}
 
-    if (_wire->reset() == 0){
+    if (!_wire->reset())
         return false;
-    }
 
     _wire->select(deviceAddress);
     _wire->write(STARTCONVO, parasite);
 
-    // ASYNC mode?
-    if (!waitForConversion) return true;
-
-    blockTillConversionComplete(bitResolution);
+	if (waitForConversion)
+		blockTillConversionComplete(bitResolution);
 
     return true;
 

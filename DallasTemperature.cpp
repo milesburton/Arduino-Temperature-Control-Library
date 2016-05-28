@@ -386,6 +386,9 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const
 		int ms = millisToWaitForConversion(bitResolution);
 		delay(ms);
 
+		if (parasite)
+			_wire->depower(); // write(*, true) held the bus HIGH for parasite power
+
 	}
     
 }

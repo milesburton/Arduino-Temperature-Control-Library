@@ -210,12 +210,13 @@ bool DallasTemperature::readPowerSupply() {
 void DallasTemperature::setResolution(uint8_t newResolution){
 
     bitResolution = constrain(newResolution, 9, 12);
-    DeviceAddress deviceAddress;
     for (int i=0; i<devices; i++)
     {
-        getAddress(deviceAddress, i);
-        setResolution(deviceAddress, bitResolution);
-    }
+		DeviceAddress deviceAddress;
+		if (!getAddress(deviceAddress, i))
+			continue;
+		setResolution(deviceAddress, bitResolution);
+	}
 
 }
 
@@ -421,12 +422,12 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
 // sends command for one device to perform a temp conversion by index
 bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex){
-
     DeviceAddress deviceAddress;
-    getAddress(deviceAddress, deviceIndex);
+
+    if (!getAddress(deviceAddress, deviceIndex))
+    	return false;
 
     return requestTemperaturesByAddress(deviceAddress);
-
 }
 
 // Fetch temperature for device index

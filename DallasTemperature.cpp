@@ -14,6 +14,14 @@ extern "C" {
 }
 #endif
 
+namespace {
+const int16_t MaxConversionTime_9Bits = 94;
+const int16_t MaxConversionTime_10Bits = 188;
+const int16_t MaxConversionTime_11Bits = 375;
+const int16_t MaxConversionTime_12Bits = 750;
+const int16_t MaxConversionTime = MaxConversionTime_12Bits;
+}
+
 DallasTemperature::DallasTemperature() {}
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
 
@@ -351,9 +359,9 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const
 
 	if (checkForConversion && !parasite) {
 
-		// something is wrong if conversion takes more than 750ms
+		// something is wrong if conversion takes more than MaxConversionTime
 		unsigned long start = millis();
-		unsigned long timeout = 750 * 1.1;
+		unsigned long timeout = MaxConversionTime * 1.1;
 
 		for (;;) {
 			if (isConversionComplete())
@@ -381,13 +389,13 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution){
 
     switch (bitResolution){
     case 9:
-        return 94;
+        return MaxConversionTime_9Bits;
     case 10:
-        return 188;
+        return MaxConversionTime_10Bits;
     case 11:
-        return 375;
+        return MaxConversionTime_11Bits;
     default:
-        return 750;
+        return MaxConversionTime_12Bits;
     }
 
 }

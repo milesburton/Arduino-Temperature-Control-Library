@@ -827,22 +827,12 @@ void DallasTemperature::defaultAlarmHandler(const uint8_t* deviceAddress){}
 #if REQUIRESNEW
 
 // MnetCS - Allocates memory for DallasTemperature. Allows us to instance a new object
-void* DallasTemperature::operator new(unsigned int size){ // Implicit NSS obj size
-
-    void * p; // void pointer
-    p = malloc(size); // Allocate memory
-    memset((DallasTemperature*)p,0,size); // Initialise memory
-
-    //!!! CANT EXPLICITLY CALL CONSTRUCTOR - workaround by using an init() methodR - workaround by using an init() method
-    return (DallasTemperature*) p; // Cast blank region to NSS pointer
+void* DallasTemperature::operator new(unsigned int size){
+    return malloc(size);
 }
 
 // MnetCS 2009 -  Free the memory used by this instance
 void DallasTemperature::operator delete(void* p){
-
-    DallasTemperature* pNss =  (DallasTemperature*) p; // Cast to NSS pointer
-    pNss->~DallasTemperature(); // Destruct the object
-
     free(p); // Free the memory
 }
 

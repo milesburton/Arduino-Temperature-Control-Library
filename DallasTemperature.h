@@ -100,6 +100,9 @@ public:
     // read device's power requirements
     bool readPowerSupply(const uint8_t*);
 
+    // read bus's power requirements
+    bool readPowerSupply();
+
     // get global resolution
     uint8_t getResolution();
 

@@ -185,6 +185,22 @@ bool DallasTemperature::readPowerSupply(const uint8_t* deviceAddress){
 
 }
 
+bool DallasTemperature::readPowerSupply() {
+
+    _wire->reset();
+    _wire->skip();
+    _wire->write(READPOWERSUPPLY);
+
+    bool signal = _wire->read_bit();
+    // if signal is low, (at least) one device is using parasite power
+
+    bool parasite = !signal;
+
+    _wire->reset();
+
+    return parasite;
+}
+
 
 // set resolution of all devices to 9, 10, 11, or 12 bits
 // if new resolution is out of range, it is constrained.

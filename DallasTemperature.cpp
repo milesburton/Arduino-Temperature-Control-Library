@@ -155,7 +155,6 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     if (deviceAddress[0] != DS18S20MODEL) _wire->write(scratchPad[CONFIGURATION]);
 
     _wire->reset();
-    _wire->select(deviceAddress);
 
     // save the newly written values to eeprom
     _wire->select(deviceAddress);
@@ -189,14 +188,20 @@ void DallasTemperature::setResolution(uint8_t newResolution){
     for (int i=0; i<devices; i++)
     {
         getAddress(deviceAddress, i);
-        setResolution(deviceAddress, bitResolution);
+        setResolution(deviceAddress, bitResolution, true);
     }
 
 }
 
 // set resolution of a device to 9, 10, 11, or 12 bits
 // if new resolution is out of range, 9 bits is used.
-bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newResolution){
+bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newResolution, bool skipGlobalBitResolutionCalculation){
+
+	// ensure same behavior as setResolution(uint8_t newResolution)
+	newResolution = constrain(newResolution, 9, 12);
+			
+    // return when stored value == new value
+    if(getResolution(deviceAddress) == newResolution) return true;
 
     ScratchPad scratchPad;
     if (isConnected(deviceAddress, scratchPad)){
@@ -220,6 +225,19 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newR
                 break;
             }
             writeScratchPad(deviceAddress, scratchPad);
+
+            // without calculation we can always set it to max
+			bitResolution = max(bitResolution, newResolution);
+			
+			if(!skipGlobalBitResolutionCalculation && (bitResolution > newResolution)){
+				bitResolution = newResolution;
+				DeviceAddress deviceAddr;
+				for (int i=0; i<devices; i++)
+				{
+					getAddress(deviceAddr, i);
+					bitResolution = max(bitResolution, getResolution(deviceAddr));
+				}
+			}
         }
         return true;  // new value set
     }
@@ -499,6 +517,9 @@ bool DallasTemperature::isParasitePowerMode(void){
 // note if device is not connected it will fail writing the data.
 void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data)
 {
+    // return when stored value == new value
+    if(getUserData(deviceAddress) == data) return;
+
     ScratchPad scratchPad;
     if (isConnected(deviceAddress, scratchPad))
     {
@@ -594,6 +615,9 @@ the next temperature conversion.
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setHighAlarmTemp(const uint8_t* deviceAddress, char celsius){
 
+    // return when stored value == new value
+    if(getHighAlarmTemp(deviceAddress) == celsius) return;
+
     // make sure the alarm temperature is within the device's range
     if (celsius > 125) celsius = 125;
     else if (celsius < -55) celsius = -55;
@@ -610,6 +634,10 @@ void DallasTemperature::setHighAlarmTemp(const uint8_t* deviceAddress, char cels
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setLowAlarmTemp(const uint8_t* deviceAddress, char celsius){
+    
+    // return when stored value == new value
+    if(getLowAlarmTemp(deviceAddress) == celsius) return;
+
     // make sure the alarm temperature is within the device's range
     if (celsius > 125) celsius = 125;
     else if (celsius < -55) celsius = -55;

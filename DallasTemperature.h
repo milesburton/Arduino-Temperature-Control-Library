@@ -110,7 +110,7 @@ public:
     uint8_t getResolution(const uint8_t*);
 
     // set resolution of a device to 9, 10, 11, or 12 bits
-    bool setResolution(const uint8_t*, uint8_t);
+    bool setResolution(const uint8_t*, uint8_t, bool skipGlobalBitResolutionCalculation = false);
 
     // sets/gets the waitForConversion flag
     void setWaitForConversion(bool);

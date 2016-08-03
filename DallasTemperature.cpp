@@ -308,15 +308,6 @@ bool DallasTemperature::getCheckForConversion(){
     return checkForConversion;
 }
 
-bool DallasTemperature::isConversionAvailable(const uint8_t* deviceAddress){
-
-    // Check if the clock has been raised indicating the conversion is complete
-    ScratchPad scratchPad;
-    readScratchPad(deviceAddress, scratchPad);
-    return scratchPad[0];
-
-}
-
 bool DallasTemperature::isConversionComplete()
 {
    uint8_t b = _wire->read_bit();
@@ -332,7 +323,7 @@ void DallasTemperature::requestTemperatures(){
 
     // ASYNC mode?
     if (!waitForConversion) return;
-    blockTillConversionComplete(bitResolution, NULL);
+    blockTillConversionComplete(bitResolution);
 
 }
 
@@ -346,18 +337,14 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
      return false; //Device disconnected
     }
 
-    if (_wire->reset() == 0){
-        return false;
-    }
-
+    _wire->reset();
     _wire->select(deviceAddress);
     _wire->write(STARTCONVO, parasite);
-
 
     // ASYNC mode?
     if (!waitForConversion) return true;
 
-    blockTillConversionComplete(bitResolution, deviceAddress);
+    blockTillConversionComplete(bitResolution);
 
     return true;
 
@@ -365,12 +352,12 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 
 
 // Continue to check if the IC has responded with a temperature
-void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, const uint8_t* deviceAddress){
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution){
     
     int delms = millisToWaitForConversion(bitResolution);
-    if (deviceAddress != NULL && checkForConversion && !parasite){
+    if (checkForConversion && !parasite){
         unsigned long now = millis();
-        while(!isConversionAvailable(deviceAddress) && (millis() - delms < now));
+        while(!isConversionComplete() && (millis() - delms < now));
     } else {
         delay(delms);
     }

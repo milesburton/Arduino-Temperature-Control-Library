@@ -26,6 +26,7 @@
 #define DS18B20MODEL 0x28
 #define DS1822MODEL  0x22
 #define DS1825MODEL  0x3B
+#define DS28EA00MODEL 0x42
 
 // OneWire commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad

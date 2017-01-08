@@ -30,6 +30,7 @@ bool DallasTemperature::validFamily(const uint8_t* deviceAddress){
         case DS18B20MODEL:
         case DS1822MODEL:
         case DS1825MODEL:
+        case DS28EA00MODEL:
             return true;
         default:
             return false;

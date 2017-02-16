@@ -133,6 +133,9 @@ public:
     // returns temperature raw value (12 bit integer of 1/128 degrees C)
     int16_t getTemp(const uint8_t*);
 
+    // returns moisture value as 12 bit integer
+    int16_t getMois(const uint8_t*);
+
     // returns temperature in degrees C
     float getTempC(const uint8_t*);
 
@@ -145,6 +148,9 @@ public:
     // Get temperature for device index (slow)
     float getTempFByIndex(uint8_t);
 
+    // Get moisture for device index (slow)
+    int16_t getMoisByIndex(uint8_t);
+    
     // returns true if the bus requires parasite power
     bool isParasitePowerMode(void);
     

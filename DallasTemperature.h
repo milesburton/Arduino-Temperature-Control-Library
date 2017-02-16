@@ -150,6 +150,8 @@ public:
     
      // Is a conversion complete on the wire?
     bool isConversionComplete(void);
+    
+    int16_t millisToWaitForConversion(uint8_t);
 
 #if REQUIRESALARMS
 
@@ -250,8 +252,6 @@ private:
 
     // reads scratchpad and returns the raw temperature
     int16_t calculateTemperature(const uint8_t*, uint8_t*);
-
-    int16_t millisToWaitForConversion(uint8_t);
 
     void	blockTillConversionComplete(uint8_t);
 

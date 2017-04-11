@@ -14,6 +14,32 @@ extern "C" {
 }
 #endif
 
+// OneWire commands
+#define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad
+#define COPYSCRATCH     0x48  // Copy EEPROM
+#define READSCRATCH     0xBE  // Read EEPROM
+#define WRITESCRATCH    0x4E  // Write to EEPROM
+#define RECALLSCRATCH   0xB8  // Reload from last known
+#define READPOWERSUPPLY 0xB4  // Determine if device needs parasite power
+#define ALARMSEARCH     0xEC  // Query bus for devices with an alarm condition
+
+// Scratchpad locations
+#define TEMP_LSB        0
+#define TEMP_MSB        1
+#define HIGH_ALARM_TEMP 2
+#define LOW_ALARM_TEMP  3
+#define CONFIGURATION   4
+#define INTERNAL_BYTE   5
+#define COUNT_REMAIN    6
+#define COUNT_PER_C     7
+#define SCRATCHPAD_CRC  8
+
+// Device resolution
+#define TEMP_9_BIT  0x1F //  9 bit
+#define TEMP_10_BIT 0x3F // 10 bit
+#define TEMP_11_BIT 0x5F // 11 bit
+#define TEMP_12_BIT 0x7F // 12 bit
+
 DallasTemperature::DallasTemperature() {}
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
 
@@ -200,7 +226,7 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newR
 
 	// ensure same behavior as setResolution(uint8_t newResolution)
 	newResolution = constrain(newResolution, 9, 12);
-			
+
     // return when stored value == new value
     if(getResolution(deviceAddress) == newResolution) return true;
 
@@ -229,7 +255,7 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newR
 
             // without calculation we can always set it to max
 			bitResolution = max(bitResolution, newResolution);
-			
+
 			if(!skipGlobalBitResolutionCalculation && (bitResolution > newResolution)){
 				bitResolution = newResolution;
 				DeviceAddress deviceAddr;
@@ -354,7 +380,7 @@ bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddres
 
 // Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution){
-    
+
     int delms = millisToWaitForConversion(bitResolution);
     if (checkForConversion && !parasite){
         unsigned long now = millis();
@@ -362,7 +388,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution){
     } else {
         delay(delms);
     }
-    
+
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
@@ -622,7 +648,7 @@ void DallasTemperature::setHighAlarmTemp(const uint8_t* deviceAddress, char cels
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setLowAlarmTemp(const uint8_t* deviceAddress, char celsius){
-    
+
     // return when stored value == new value
     if(getLowAlarmTemp(deviceAddress) == celsius) return;
 

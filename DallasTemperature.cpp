@@ -81,8 +81,9 @@ void DallasTemperature::begin(void){
 
     _wire->reset_search();
     devices = 0; // Reset the number of devices when we enumerate wire devices
-
-    while (_wire->search(deviceAddress)){
+    
+    // Explicitly set search_mode to true to avoid errors on some verions of arduino nano
+    while (_wire->search(deviceAddress, true)){
 
         if (validAddress(deviceAddress)){
 

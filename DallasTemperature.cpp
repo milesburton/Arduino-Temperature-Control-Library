@@ -841,7 +841,7 @@ void DallasTemperature::processAlarms(void) {
 }
 
 // sets the alarm handler
-void DallasTemperature::setAlarmHandler(AlarmHandler *handler) {
+void DallasTemperature::setAlarmHandler(const AlarmHandler *handler) {
 	_AlarmHandler = handler;
 }
 

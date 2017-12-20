@@ -81,6 +81,7 @@ void DallasTemperature::begin(void){
 
     _wire->reset_search();
     devices = 0; // Reset the number of devices when we enumerate wire devices
+	ds18Count = 0; // Reset number of DS18xxx Family devices
 
     while (_wire->search(deviceAddress)){
 
@@ -92,6 +93,9 @@ void DallasTemperature::begin(void){
 
             devices++;
         }
+		if (validFamily(deviceAddress)) {
+			ds18Count++;
+		}
     }
 
 }
@@ -99,6 +103,10 @@ void DallasTemperature::begin(void){
 // returns the number of devices found on the bus
 uint8_t DallasTemperature::getDeviceCount(void){
     return devices;
+}
+
+uint8_t DallasTemperature::getDS18Count(void) {
+	return ds18Count;
 }
 
 // returns true if address is valid

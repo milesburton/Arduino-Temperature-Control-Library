@@ -50,6 +50,9 @@ public:
     // returns the number of devices found on the bus
     uint8_t getDeviceCount(void);
 
+	// returns the number of DS18xxx Family devices on bus
+	uint8_t getDS18Count(void);
+
     // returns true if address is valid
     bool validAddress(const uint8_t*);
 
@@ -220,6 +223,9 @@ private:
 
     // count of devices on the bus
     uint8_t devices;
+
+	// count of DS18xxx Family devices on bus
+	uint8_t ds18Count;
 
     // Take a pointer to one wire instance
     OneWire* _wire;

@@ -1,7 +1,7 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-#define DALLASTEMPLIBVERSION "3.7.8" // To be deprecated
+#define DALLASTEMPLIBVERSION "3.7.9" // To be deprecated
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -168,8 +168,8 @@ public:
 	// sets the alarm handler
 	void setAlarmHandler(const AlarmHandler *);
 
-	// The default alarm handler
-	static void defaultAlarmHandler(const uint8_t*);
+	// returns true if an AlarmHandler has been set
+	bool hasAlarmHandler();
 
 #endif
 

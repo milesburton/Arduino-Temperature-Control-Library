@@ -636,7 +636,7 @@ float DallasTemperature::rawToFahrenheit(int16_t raw) {
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setHighAlarmTemp(const uint8_t* deviceAddress,
-		char celsius) {
+		int8_t celsius) {
 
 	// return when stored value == new value
 	if (getHighAlarmTemp(deviceAddress) == celsius)
@@ -660,7 +660,7 @@ void DallasTemperature::setHighAlarmTemp(const uint8_t* deviceAddress,
 // accepts a float, but the alarm resolution will ignore anything
 // after a decimal point.  valid range is -55C - 125C
 void DallasTemperature::setLowAlarmTemp(const uint8_t* deviceAddress,
-		char celsius) {
+		int8_t celsius) {
 
 	// return when stored value == new value
 	if (getLowAlarmTemp(deviceAddress) == celsius)
@@ -680,24 +680,24 @@ void DallasTemperature::setLowAlarmTemp(const uint8_t* deviceAddress,
 
 }
 
-// returns a char with the current high alarm temperature or
+// returns a int8_t with the current high alarm temperature or
 // DEVICE_DISCONNECTED for an address
-char DallasTemperature::getHighAlarmTemp(const uint8_t* deviceAddress) {
+int8_t DallasTemperature::getHighAlarmTemp(const uint8_t* deviceAddress) {
 
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
-		return (char) scratchPad[HIGH_ALARM_TEMP];
+		return (int8_t) scratchPad[HIGH_ALARM_TEMP];
 	return DEVICE_DISCONNECTED_C;
 
 }
 
-// returns a char with the current low alarm temperature or
+// returns a int8_t with the current low alarm temperature or
 // DEVICE_DISCONNECTED for an address
-char DallasTemperature::getLowAlarmTemp(const uint8_t* deviceAddress) {
+int8_t DallasTemperature::getLowAlarmTemp(const uint8_t* deviceAddress) {
 
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
-		return (char) scratchPad[LOW_ALARM_TEMP];
+		return (int8_t) scratchPad[LOW_ALARM_TEMP];
 	return DEVICE_DISCONNECTED_C;
 
 }
@@ -728,7 +728,7 @@ void DallasTemperature::resetAlarmSearch() {
 bool DallasTemperature::alarmSearch(uint8_t* newAddr) {
 
 	uint8_t i;
-	char lastJunction = -1;
+	int8_t lastJunction = -1;
 	uint8_t done = 1;
 
 	if (alarmSearchExhausted)
@@ -800,14 +800,14 @@ bool DallasTemperature::hasAlarm(const uint8_t* deviceAddress) {
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad)) {
 
-		char temp = calculateTemperature(deviceAddress, scratchPad) >> 7;
+		int8_t temp = calculateTemperature(deviceAddress, scratchPad) >> 7;
 
 		// check low alarm
-		if (temp <= (char) scratchPad[LOW_ALARM_TEMP])
+		if (temp <= (int8_t) scratchPad[LOW_ALARM_TEMP])
 			return true;
 
 		// check high alarm
-		if (temp >= (char) scratchPad[HIGH_ALARM_TEMP])
+		if (temp >= (int8_t) scratchPad[HIGH_ALARM_TEMP])
 			return true;
 	}
 

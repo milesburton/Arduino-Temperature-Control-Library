@@ -1,7 +1,7 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-#define DALLASTEMPLIBVERSION "3.7.7" // To be deprecated
+#define DALLASTEMPLIBVERSION "3.7.8" // To be deprecated
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -135,20 +135,20 @@ public:
 	typedef void AlarmHandler(const uint8_t*);
 
 	// sets the high alarm temperature for a device
-	// accepts a char.  valid range is -55C - 125C
-	void setHighAlarmTemp(const uint8_t*, char);
+	// accepts a int8_t.  valid range is -55C - 125C
+	void setHighAlarmTemp(const uint8_t*, int8_t);
 
 	// sets the low alarm temperature for a device
-	// accepts a char.  valid range is -55C - 125C
-	void setLowAlarmTemp(const uint8_t*, char);
+	// accepts a int8_t.  valid range is -55C - 125C
+	void setLowAlarmTemp(const uint8_t*, int8_t);
 
-	// returns a signed char with the current high alarm temperature for a device
+	// returns a int8_t with the current high alarm temperature for a device
 	// in the range -55C - 125C
-	char getHighAlarmTemp(const uint8_t*);
+	int8_t getHighAlarmTemp(const uint8_t*);
 
-	// returns a signed char with the current low alarm temperature for a device
+	// returns a int8_t with the current low alarm temperature for a device
 	// in the range -55C - 125C
-	char getLowAlarmTemp(const uint8_t*);
+	int8_t getLowAlarmTemp(const uint8_t*);
 
 	// resets internal variables used for the alarm search
 	void resetAlarmSearch(void);
@@ -239,7 +239,7 @@ private:
 
 	// required for alarmSearch
 	uint8_t alarmSearchAddress[8];
-	char alarmSearchJunction;
+	int8_t alarmSearchJunction;
 	uint8_t alarmSearchExhausted;
 
 	// the alarm handler function pointer

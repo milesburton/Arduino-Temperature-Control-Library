@@ -39,16 +39,20 @@ extern "C" {
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
-DallasTemperature::DallasTemperature() {
+#define NO_ALARM_HANDLER ((AlarmHandler *)0)
+
+DallasTemperature::DallasTemperature()
+{
+#if REQUIRESALARMS
+	setAlarmHandler(NO_ALARM_HANDLER);
+#endif
 }
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
-
-#if REQUIRESALARMS
-:
-		_AlarmHandler(&defaultAlarmHandler)
-#endif
 {
 	setOneWire(_oneWire);
+#if REQUIRESALARMS
+	setAlarmHandler(NO_ALARM_HANDLER);
+#endif
 }
 
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
@@ -822,21 +826,24 @@ bool DallasTemperature::hasAlarm(void) {
 	DeviceAddress deviceAddress;
 	resetAlarmSearch();
 	return alarmSearch(deviceAddress);
-
 }
 
 // runs the alarm handler for all devices returned by alarmSearch()
+// unless there no _AlarmHandler exist.
 void DallasTemperature::processAlarms(void) {
+
+if (!hasAlarmHandler())
+{
+	return;
+}
 
 	resetAlarmSearch();
 	DeviceAddress alarmAddr;
 
 	while (alarmSearch(alarmAddr)) {
-
 		if (validAddress(alarmAddr)) {
 			_AlarmHandler(alarmAddr);
 		}
-
 	}
 }
 
@@ -845,8 +852,10 @@ void DallasTemperature::setAlarmHandler(const AlarmHandler *handler) {
 	_AlarmHandler = handler;
 }
 
-// The default alarm handler
-void DallasTemperature::defaultAlarmHandler(const uint8_t* deviceAddress) {
+// checks if AlarmHandler has been set.
+bool DallasTemperature::hasAlarmHandler()
+{
+  return _AlarmHandler != NO_ALARM_HANDLER;
 }
 
 #endif

@@ -9,11 +9,18 @@
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device addresses
 DeviceAddress insideThermometer, outsideThermometer;
+
+// Assign address manually. The addresses below will beed to be changed
+// to valid device addresses on your bus. Device address can be retrieved
+// by using either oneWire.search(deviceAddress) or individually via
+// sensors.getAddress(deviceAddress, index)
+// DeviceAddress insideThermometer = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
+// DeviceAddress outsideThermometer   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
 
 void setup(void)
 {
@@ -31,31 +38,24 @@ void setup(void)
   Serial.println(" devices.");
 
   // report parasite power requirements
-  Serial.print("Parasite power is: "); 
+  Serial.print("Parasite power is: ");
   if (sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
 
-  // Assign address manually. The addresses below will beed to be changed
-  // to valid device addresses on your bus. Device address can be retrieved
-  // by using either oneWire.search(deviceAddress) or individually via
-  // sensors.getAddress(deviceAddress, index)
-  //insideThermometer = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
-  //outsideThermometer   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
-
   // Search for devices on the bus and assign based on an index. Ideally,
-  // you would do this to initially discover addresses on the bus and then 
-  // use those addresses and manually assign them (see above) once you know 
+  // you would do this to initially discover addresses on the bus and then
+  // use those addresses and manually assign them (see above) once you know
   // the devices on your bus (and assuming they don't change).
-  // 
+  //
   // method 1: by index
-  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0"); 
-  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1"); 
+  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0");
+  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1");
 
   // method 2: search()
   // search() looks for the next device. Returns 1 if a new address has been
-  // returned. A zero might mean that the bus is shorted, there are no devices, 
-  // or you have already retrieved all of them. It might be a good idea to 
-  // check the CRC to make sure you didn't get garbage. The order is 
+  // returned. A zero might mean that the bus is shorted, there are no devices,
+  // or you have already retrieved all of them. It might be a good idea to
+  // check the CRC to make sure you didn't get garbage. The order is
   // deterministic. You will always get the same devices in the same order
   //
   // Must be called before search()
@@ -79,11 +79,11 @@ void setup(void)
   sensors.setResolution(outsideThermometer, TEMPERATURE_PRECISION);
 
   Serial.print("Device 0 Resolution: ");
-  Serial.print(sensors.getResolution(insideThermometer), DEC); 
+  Serial.print(sensors.getResolution(insideThermometer), DEC);
   Serial.println();
 
   Serial.print("Device 1 Resolution: ");
-  Serial.print(sensors.getResolution(outsideThermometer), DEC); 
+  Serial.print(sensors.getResolution(outsideThermometer), DEC);
   Serial.println();
 }
 
@@ -113,7 +113,7 @@ void printResolution(DeviceAddress deviceAddress)
 {
   Serial.print("Resolution: ");
   Serial.print(sensors.getResolution(deviceAddress));
-  Serial.println();    
+  Serial.println();
 }
 
 // main function to print information about a device
@@ -127,11 +127,11 @@ void printData(DeviceAddress deviceAddress)
 }
 
 /*
- * Main function, calls the temperatures in a loop.
- */
+   Main function, calls the temperatures in a loop.
+*/
 void loop(void)
-{ 
-  // call sensors.requestTemperatures() to issue a global temperature 
+{
+  // call sensors.requestTemperatures() to issue a global temperature
   // request to all devices on the bus
   Serial.print("Requesting temperatures...");
   sensors.requestTemperatures();
@@ -141,4 +141,3 @@ void loop(void)
   printData(insideThermometer);
   printData(outsideThermometer);
 }
-

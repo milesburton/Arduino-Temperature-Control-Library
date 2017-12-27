@@ -125,7 +125,7 @@ public:
 	// returns true if the bus requires parasite power
 	bool isParasitePowerMode(void);
 
-	// Is a conversion complete on the wire?
+	// Is a conversion complete on the wire? Only applies to the first sensor on the wire.
 	bool isConversionComplete(void);
 
 	int16_t millisToWaitForConversion(uint8_t);

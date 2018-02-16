@@ -30,6 +30,7 @@ or
 
 at the top of DallasTemperature.h
 
+Finally, please include OneWire from Paul Stoffregen in the library manager before you begin.
 
 ## Credits
 

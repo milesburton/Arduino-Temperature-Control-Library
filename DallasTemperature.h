@@ -19,7 +19,11 @@
 #endif
 
 #include <inttypes.h>
+#ifdef __STM32F1__
+#include <OneWireSTM.h>
+#else
 #include <OneWire.h>
+#endif
 
 // Model IDs
 #define DS18S20MODEL 0x10  // also DS1820

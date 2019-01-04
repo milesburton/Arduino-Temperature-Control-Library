@@ -443,11 +443,10 @@ float DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
 
 	DeviceAddress deviceAddress;
 	if (!getAddress(deviceAddress, deviceIndex)) {
-		return DEVICE_DISCONNECTED_C;
+		return	rawToCelsius(_deviceDisconnectedRaw);	//was return DEVICE_DISCONNECTED_C;
 	}
 
 	return getTempC((uint8_t*) deviceAddress);
-
 }
 
 // Fetch temperature for device index
@@ -456,7 +455,7 @@ float DallasTemperature::getTempFByIndex(uint8_t deviceIndex) {
 	DeviceAddress deviceAddress;
 
 	if (!getAddress(deviceAddress, deviceIndex)) {
-		return DEVICE_DISCONNECTED_F;
+		return rawToFahrenheit(_deviceDisconnectedRaw);		//was return DEVICE_DISCONNECTED_F;
 	}
 
 	return getTempF((uint8_t*) deviceAddress);
@@ -509,12 +508,14 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
+// in new fork _deviceDisconnectedRaw variable is used instead of DEVICE_DISCONNECTED_RAW
 int16_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
 
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
 		return calculateTemperature(deviceAddress, scratchPad);
-	return DEVICE_DISCONNECTED_RAW;
+	//return DEVICE_DISCONNECTED_RAW;
+	return _deviceDisconnectedRaw;
 
 }
 
@@ -532,6 +533,7 @@ float DallasTemperature::getTempC(const uint8_t* deviceAddress) {
 // the numeric value of DEVICE_DISCONNECTED_F is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
+//		in this fork DEVICE_DISCONNECTED_F replaced by rawtoFahrenheit(_deviceDisconnectedRaw)
 float DallasTemperature::getTempF(const uint8_t* deviceAddress) {
 	return rawToFahrenheit(getTemp(deviceAddress));
 }
@@ -583,6 +585,37 @@ void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data) {
 	setUserData((uint8_t*) deviceAddress, data);
 }
 
+//********* added functionality	
+
+	// set Device Disconnected Error Code value
+void DallasTemperature::setDeviceDisconnectedRaw(const int16_t valueRaw) {
+	
+	_deviceDisconnectedRaw = valueRaw;
+}
+
+void DallasTemperature::setDeviceDisconnectedC(const float valueC) {
+	
+	setDeviceDisconnectedRaw ( _celsiusToRaw(valueC) ) ;
+}
+
+void DallasTemperature::setDeviceDisconnectedF(const float valueF) {
+	
+	setDeviceDisconnectedRaw ( _fahrenheitToRaw(valueF) ) ;
+}
+
+	// C = RAW/128 => RAW= C*128
+	// F = (C*1.8)+32 = (RAW/128*1.8)+32 => RAW = (F-32)*128*1.8
+int16_t DallasTemperature::_fahrenheitToRaw(const float valueF)	{ 
+	return (int16_t)(valueF - 32) * 128 * 1.8;	
+}
+
+int16_t DallasTemperature::_celsiusToRaw(const float valueC) { 
+	return (int16_t)128 * valueC; 
+}
+
+//********* 
+
+
 // Convert float Celsius to Fahrenheit
 float DallasTemperature::toFahrenheit(float celsius) {
 	return (celsius * 1.8) + 32;
@@ -596,18 +629,21 @@ float DallasTemperature::toCelsius(float fahrenheit) {
 // convert from raw to Celsius
 float DallasTemperature::rawToCelsius(int16_t raw) {
 
-	if (raw <= DEVICE_DISCONNECTED_RAW)
-		return DEVICE_DISCONNECTED_C;
+//	if (raw <= DEVICE_DISCONNECTED_RAW)
+//		return DEVICE_DISCONNECTED_C;
+	
 	// C = RAW/128
 	return (float) raw * 0.0078125;
 
 }
 
 // convert from raw to Fahrenheit
+
 float DallasTemperature::rawToFahrenheit(int16_t raw) {
 
-	if (raw <= DEVICE_DISCONNECTED_RAW)
-		return DEVICE_DISCONNECTED_F;
+//	if (raw <= DEVICE_DISCONNECTED_RAW)
+//		return DEVICE_DISCONNECTED_F;
+	
 	// C = RAW/128
 	// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
 	return ((float) raw * 0.0140625) + 32;
@@ -691,7 +727,8 @@ int8_t DallasTemperature::getHighAlarmTemp(const uint8_t* deviceAddress) {
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
 		return (int8_t) scratchPad[HIGH_ALARM_TEMP];
-	return DEVICE_DISCONNECTED_C;
+	//return DEVICE_DISCONNECTED_C;
+	return	rawToCelsius(_deviceDisconnectedRaw);
 
 }
 
@@ -702,8 +739,8 @@ int8_t DallasTemperature::getLowAlarmTemp(const uint8_t* deviceAddress) {
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
 		return (int8_t) scratchPad[LOW_ALARM_TEMP];
-	return DEVICE_DISCONNECTED_C;
-
+	//return DEVICE_DISCONNECTED_C;
+	return	rawToCelsius(_deviceDisconnectedRaw);
 }
 
 // resets internal variables used for the alarm search

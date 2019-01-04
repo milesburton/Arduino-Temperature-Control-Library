@@ -47,6 +47,9 @@ processAlarmss	KEYWORD2
 setAlarmHandlers	KEYWORD2
 defaultAlarmHandler	KEYWORD2
 calculateTemperature	KEYWORD2
+setDeviceDisconnectedRaw	KEYWORD2
+setDeviceDisconnectedC	KEYWORD2
+setDeviceDisconnectedF	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

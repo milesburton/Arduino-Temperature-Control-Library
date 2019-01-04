@@ -33,8 +33,8 @@
 #define DS28EA00MODEL 0x42
 
 // Error Codes
-#define DEVICE_DISCONNECTED_C -127
-#define DEVICE_DISCONNECTED_F -196.6
+//#define DEVICE_DISCONNECTED_C -127
+//#define DEVICE_DISCONNECTED_F -196.6
 #define DEVICE_DISCONNECTED_RAW -7040
 
 typedef uint8_t DeviceAddress[8];
@@ -111,6 +111,13 @@ public:
 	// sends command for one device to perform a temperature conversion by index
 	bool requestTemperaturesByIndex(uint8_t);
 
+//********* added functionality	
+	// set Device Disconnected Error Code value
+	void setDeviceDisconnectedRaw(const int16_t valueRaw);
+	void setDeviceDisconnectedC(const float valueC);
+	void setDeviceDisconnectedF(const float valueF);
+//********* 
+	
 	// returns temperature raw value (12 bit integer of 1/128 degrees C)
 	int16_t getTemp(const uint8_t*);
 
@@ -251,5 +258,14 @@ private:
 
 #endif
 
+	protected:
+//********* added functionality	
+	int16_t	_deviceDisconnectedRaw = DEVICE_DISCONNECTED_RAW;
+	
+	int16_t _fahrenheitToRaw(const float valueF);
+	int16_t _celsiusToRaw(const float valueC);
+
+//*********
+	
 };
 #endif

@@ -57,7 +57,7 @@ void setup(void)
 		// set the resolution to TEMPERATURE_PRECISION bit (Each Dallas/Maxim device is capable of several different resolutions)
 		sensors.setResolution(tempDeviceAddress, TEMPERATURE_PRECISION);
 		
-		 Serial.print("Resolution actually set to: ");
+		Serial.print("Resolution actually set to: ");
 		Serial.print(sensors.getResolution(tempDeviceAddress), DEC); 
 		Serial.println();
 	}else{
@@ -80,6 +80,11 @@ void printTemperature(DeviceAddress deviceAddress)
 
   // method 2 - faster
   float tempC = sensors.getTempC(deviceAddress);
+  if(tempC == DEVICE_DISCONNECTED_C) 
+  {
+    Serial.println("Error: Could not read temperature data");
+    return;
+  }
   Serial.print("Temp C: ");
   Serial.print(tempC);
   Serial.print(" Temp F: ");

@@ -239,6 +239,9 @@ private:
 
 	void blockTillConversionComplete(uint8_t);
 
+	// Returns true if all bytes of scratchPad are '\0'
+	bool isAllZeros(const uint8_t* const scratchPad, const size_t length = 9);
+
 #if REQUIRESALARMS
 
 	// required for alarmSearch

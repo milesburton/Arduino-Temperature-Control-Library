@@ -152,7 +152,7 @@ bool DallasTemperature::isConnected(const uint8_t* deviceAddress) {
 bool DallasTemperature::isConnected(const uint8_t* deviceAddress,
 		uint8_t* scratchPad) {
 	bool b = readScratchPad(deviceAddress, scratchPad);
-	return b && (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
+	return b && !isAllZeros(scratchPad) && (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 
 bool DallasTemperature::readScratchPad(const uint8_t* deviceAddress,
@@ -612,6 +612,17 @@ float DallasTemperature::rawToFahrenheit(int16_t raw) {
 	// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
 	return ((float) raw * 0.0140625) + 32;
 
+}
+
+// Returns true if all bytes of scratchPad are '\0'
+bool DallasTemperature::isAllZeros(const uint8_t * const scratchPad, const size_t length) {
+	for (size_t i = 0; i < length; i++) {
+		if (scratchPad[i] != 0) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 #if REQUIRESALARMS

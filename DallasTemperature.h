@@ -44,8 +44,11 @@ public:
 
 	DallasTemperature();
 	DallasTemperature(OneWire*);
+	DallasTemperature(OneWire*, uint8_t);
 
 	void setOneWire(OneWire*);
+
+    void setPullupPin(uint8_t);
 
 	// initialise bus
 	void begin(void);
@@ -132,7 +135,7 @@ public:
 	// Is a conversion complete on the wire? Only applies to the first sensor on the wire.
 	bool isConversionComplete(void);
 
-	int16_t millisToWaitForConversion(uint8_t);
+    int16_t millisToWaitForConversion(uint8_t);
 
 #if REQUIRESALARMS
 
@@ -215,6 +218,10 @@ private:
 	// parasite power on or off
 	bool parasite;
 
+	// external pullup
+	bool useExternalPullup;
+	uint8_t pullupPin;
+
 	// used to determine the delay amount needed to allow for the
 	// temperature conversion to take place
 	uint8_t bitResolution;
@@ -241,6 +248,10 @@ private:
 
 	// Returns true if all bytes of scratchPad are '\0'
 	bool isAllZeros(const uint8_t* const scratchPad, const size_t length = 9);
+
+    // External pullup control
+    void activateExternalPullup(void);
+    void deactivateExternalPullup(void);
 
 #if REQUIRESALARMS
 

@@ -16,6 +16,11 @@ You will need a pull-up resistor of about 5 KOhm between the 1-Wire data line
 and your 5V power. If you are using the DS18B20, ground pins 1 and 3. The
 centre pin is the data line '1-wire'.
 
+In case of temperature conversion problems (result is `-85`), strong pull-up setup may be necessary. See section 
+_Powering the DS18B20_ in 
+[DS18B20 datasheet](https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf) (page 7)
+and use `DallasTemperature(OneWire*, uint8_t)` constructor.
+
 We have included a "REQUIRESNEW" and "REQUIRESALARMS" definition. If you 
 want to slim down the code feel free to use either of these by including
 

@@ -46,6 +46,7 @@ DallasTemperature::DallasTemperature()
 #if REQUIRESALARMS
 	setAlarmHandler(NO_ALARM_HANDLER);
 #endif
+    useExternalPullup = false;
 }
 DallasTemperature::DallasTemperature(OneWire* _oneWire)
 {
@@ -53,6 +54,7 @@ DallasTemperature::DallasTemperature(OneWire* _oneWire)
 #if REQUIRESALARMS
 	setAlarmHandler(NO_ALARM_HANDLER);
 #endif
+    useExternalPullup = false;
 }
 
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
@@ -66,6 +68,21 @@ bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
 	default:
 		return false;
 	}
+}
+
+/*
+ * Constructs DallasTemperature with strong pull-up turned on. Strong pull-up is mandated in DS18B20 datasheet for parasitic
+ * power (2 wires) setup. (https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf, p. 7, section 'Powering the DS18B20').
+ */
+DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire){
+    setPullupPin(_pullupPin);
+}
+
+void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
+	useExternalPullup = true;
+	pullupPin = _pullupPin;
+	pinMode(pullupPin, OUTPUT);
+	deactivateExternalPullup();
 }
 
 void DallasTemperature::setOneWire(OneWire* _oneWire) {
@@ -207,9 +224,12 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 	_wire->write(COPYSCRATCH, parasite);
 	delay(20); // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
 
-	if (parasite)
+    if (parasite) {
+		activateExternalPullup();
 		delay(10); // 10ms delay
-	_wire->reset();
+		deactivateExternalPullup();
+	}
+    _wire->reset();
 
 }
 
@@ -407,7 +427,9 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 		while (!isConversionComplete() && (millis() - delms < now))
 			;
 	} else {
+        activateExternalPullup();
 		delay(delms);
+        deactivateExternalPullup();
 	}
 
 }
@@ -426,6 +448,16 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 		return 750;
 	}
 
+}
+
+void DallasTemperature::activateExternalPullup() {
+	if(useExternalPullup)
+		digitalWrite(pullupPin, LOW);
+}
+
+void DallasTemperature::deactivateExternalPullup() {
+	if(useExternalPullup)
+		digitalWrite(pullupPin, HIGH);
 }
 
 // sends command for one device to perform a temp conversion by index

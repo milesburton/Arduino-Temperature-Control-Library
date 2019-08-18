@@ -404,8 +404,11 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 	int delms = millisToWaitForConversion(bitResolution);
 	if (checkForConversion && !parasite) {
 		unsigned long now = millis();
-		while (!isConversionComplete() && (millis() - delms < now))
-			;
+		if((now + delms) < now) {
+			//if timeout after millisec counter wrap use delay method
+			delay(delms);
+		} else
+			while (!isConversionComplete() && (millis()  < delms + now)) ;
 	} else {
 		delay(delms);
 	}

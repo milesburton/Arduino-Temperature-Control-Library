@@ -425,7 +425,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 	if (checkForConversion && !parasite) {
 		unsigned long start = millis();
 		while (!isConversionComplete() && (millis() - start < delms))
-			;
+			yield();
 	} else {
         activateExternalPullup();
 		delay(delms);

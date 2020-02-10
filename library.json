@@ -34,7 +34,7 @@
     "authors": "Paul Stoffregen",
     "frameworks": "arduino"
   },
-  "version": "3.8.0",
+  "version": "3.8.1",
   "frameworks": "arduino",
   "platforms": "*"
 }

@@ -1,7 +1,7 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-#define DALLASTEMPLIBVERSION "3.7.9" // To be deprecated
+#define DALLASTEMPLIBVERSION "3.8.1" // To be deprecated -> TODO remove in 4.0.0
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,11 @@
 #define DEVICE_DISCONNECTED_C -127
 #define DEVICE_DISCONNECTED_F -196.6
 #define DEVICE_DISCONNECTED_RAW -7040
+
+// For readPowerSupply on oneWire bus
+#ifndef nullptr
+#define nullptr NULL
+#endif
 
 typedef uint8_t DeviceAddress[8];
 
@@ -82,7 +87,7 @@ public:
 	void writeScratchPad(const uint8_t*, const uint8_t*);
 
 	// read device's power requirements
-	bool readPowerSupply(const uint8_t*);
+	bool readPowerSupply(const uint8_t* deviceAddress = nullptr);
 
 	// get global resolution
 	uint8_t getResolution();

@@ -233,17 +233,25 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 
 }
 
-bool DallasTemperature::readPowerSupply(const uint8_t* deviceAddress) {
-
-	bool ret = false;
+// returns true if parasite mode is used (2 wire)
+// returns false if normal mode is used (3 wire)
+// if no address is given (or nullptr) it checks if any device on the bus
+// uses parasite mode.
+// See issue #145
+bool DallasTemperature::readPowerSupply(const uint8_t* deviceAddress)
+{
+	bool parasiteMode = false;
 	_wire->reset();
-	_wire->select(deviceAddress);
+	if (deviceAddress == nullptr)
+		_wire->skip();
+	else
+		_wire->select(deviceAddress);
+
 	_wire->write(READPOWERSUPPLY);
 	if (_wire->read_bit() == 0)
-		ret = true;
+		parasiteMode = true;
 	_wire->reset();
-	return ret;
-
+	return parasiteMode;
 }
 
 // set resolution of all devices to 9, 10, 11, or 12 bits

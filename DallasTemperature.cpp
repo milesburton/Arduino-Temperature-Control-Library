@@ -109,19 +109,18 @@ void DallasTemperature::begin(void) {
 	while (_wire->search(deviceAddress)) {
 
 		if (validAddress(deviceAddress)) {
-
-			if (!parasite && readPowerSupply(deviceAddress))
-				parasite = true;
-
-			bitResolution = max(bitResolution, getResolution(deviceAddress));
-
 			devices++;
+
 			if (validFamily(deviceAddress)) {
 				ds18Count++;
+
+				if (!parasite && readPowerSupply(deviceAddress))
+					parasite = true;
+
+				bitResolution = max(bitResolution, getResolution(deviceAddress));
 			}
 		}
 	}
-
 }
 
 // returns the number of devices found on the bus

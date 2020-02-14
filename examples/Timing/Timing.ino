@@ -1,30 +1,31 @@
 //
-//    FILE: DS18B20_performance.ino
+//    FILE: Timing.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.0.1
-// PURPOSE: show performance of DS18B20 lib 
+// VERSION: 0.0.2
+// PURPOSE: show performance of DallasTemperature lib 
 //          compared to datasheet times per resolution
 //
 // HISTORY:
 // 0.0.1 = 2017-07-25 initial version
+// 0.0.2 = 2020-02-13 updates to work with current lib version
 
 #include <OneWire.h>
-#include <DS18B20.h>
+#include <DallasTemperature.h>
 
 #define ONE_WIRE_BUS 2
 
 OneWire oneWire(ONE_WIRE_BUS);
-DS18B20 sensor(&oneWire);
+DallasTemperature sensor(&oneWire);
 
 uint32_t start, stop;
 
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println(__FILE__);
-  Serial.print("DS18B20 Library version: ");
-  Serial.println(DS18B20_LIB_VERSION);
+  Serial.print("DallasTemperature Library version: ");
+  Serial.println(DALLASTEMPLIBVERSION);
 
   sensor.begin();
 }
@@ -62,8 +63,7 @@ uint32_t run(int runs)
   for (int i = 0; i < runs; i++)
   {
     sensor.requestTemperatures();
-    while (!sensor.isConversionComplete());
-    t = sensor.getTempC();
+    t = sensor.getTempCByIndex(0);
   }
   stop = millis();
   return stop - start;

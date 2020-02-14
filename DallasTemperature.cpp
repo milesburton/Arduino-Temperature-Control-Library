@@ -423,16 +423,16 @@ bool DallasTemperature::requestTemperaturesByAddress(
 // Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 
-	unsigned long delms = millisToWaitForConversion(bitResolution);
-	if (checkForConversion && !parasite) {
-		unsigned long start = millis();
-		while (!isConversionComplete() && (millis() - start < delms))
-			yield();
-	} else {
-        activateExternalPullup();
-		delay(delms);
-        deactivateExternalPullup();
-	}
+  if (checkForConversion && !parasite) {
+    unsigned long start = millis();
+    while (!isConversionComplete() && (millis() - start < MAX_CONVERSION_TIMEOUT ))
+      yield();
+  } else {
+    unsigned long delms = millisToWaitForConversion(bitResolution);
+    activateExternalPullup();
+    delay(delms);
+    deactivateExternalPullup();
+  }
 
 }
 

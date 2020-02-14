@@ -41,20 +41,15 @@ extern "C" {
 
 #define NO_ALARM_HANDLER ((AlarmHandler *)0)
 
-DallasTemperature::DallasTemperature()
-{
+DallasTemperature::DallasTemperature() {
 #if REQUIRESALARMS
 	setAlarmHandler(NO_ALARM_HANDLER);
 #endif
     useExternalPullup = false;
 }
-DallasTemperature::DallasTemperature(OneWire* _oneWire)
-{
+
+DallasTemperature::DallasTemperature(OneWire* _oneWire) : DallasTemperature() {
 	setOneWire(_oneWire);
-#if REQUIRESALARMS
-	setAlarmHandler(NO_ALARM_HANDLER);
-#endif
-    useExternalPullup = false;
 }
 
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
@@ -74,8 +69,8 @@ bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
  * Constructs DallasTemperature with strong pull-up turned on. Strong pull-up is mandated in DS18B20 datasheet for parasitic
  * power (2 wires) setup. (https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf, p. 7, section 'Powering the DS18B20').
  */
-DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire){
-    setPullupPin(_pullupPin);
+DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire) {
+  setPullupPin(_pullupPin);
 }
 
 void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
@@ -480,11 +475,10 @@ bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex) {
 // Fetch temperature for device index
 float DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
 
-	DeviceAddress deviceAddress;
+DeviceAddress deviceAddress;
 	if (!getAddress(deviceAddress, deviceIndex)) {
 		return DEVICE_DISCONNECTED_C;
 	}
-
 	return getTempC((uint8_t*) deviceAddress);
 
 }

@@ -15,10 +15,10 @@ extern "C" {
 
 // OneWire commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad
-#define COPYSCRATCH     0x48  // Copy EEPROM
-#define READSCRATCH     0xBE  // Read EEPROM
-#define WRITESCRATCH    0x4E  // Write to EEPROM
-#define RECALLSCRATCH   0xB8  // Reload from last known
+#define COPYSCRATCH     0x48  // Copy scratchpad to EEPROM
+#define READSCRATCH     0xBE  // Read from scratchpad
+#define WRITESCRATCH    0x4E  // Write to scratchpad
+#define RECALLSCRATCH   0xB8  // Recall from EEPROM to scratchpad
 #define READPOWERSUPPLY 0xB4  // Determine if device needs parasite power
 #define ALARMSEARCH     0xEC  // Query bus for devices with an alarm condition
 
@@ -262,7 +262,7 @@ void DallasTemperature::setResolution(uint8_t newResolution) {
 }
 
 // set resolution of a device to 9, 10, 11, or 12 bits
-// if new resolution is out of range, 9 bits is used.
+// if new resolution is out of range, it is constrained.
 bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 		uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
 

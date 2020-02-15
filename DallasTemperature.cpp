@@ -89,6 +89,7 @@ void DallasTemperature::setOneWire(OneWire* _oneWire) {
 	bitResolution = 9;
 	waitForConversion = true;
 	checkForConversion = true;
+  autoSaveConfiguration = true;
 
 }
 
@@ -211,20 +212,10 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 	if (deviceAddress[0] != DS18S20MODEL)
 		_wire->write(scratchPad[CONFIGURATION]);
 
-	_wire->reset();
-
-	// save the newly written values to eeprom
-	_wire->select(deviceAddress);
-	_wire->write(COPYSCRATCH, parasite);
-	delay(20); // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
-
-    if (parasite) {
-		activateExternalPullup();
-		delay(10); // 10ms delay
-		deactivateExternalPullup();
-	}
+  if (getAutoSaveConfiguration())
+    saveConfiguration(deviceAddress);
+  else
     _wire->reset();
-
 }
 
 // returns true if parasite mode is used (2 wire)
@@ -450,6 +441,97 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 		return 750;
 	}
 
+}
+
+// Sends command to one device to save configuration from scratchpad to EEPROM by index
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::saveConfigurationByIndex(uint8_t deviceIndex) {
+  
+  DeviceAddress deviceAddress;
+  getAddress(deviceAddress, deviceIndex);
+  
+  return saveConfiguration(deviceAddress);
+  
+}
+
+// Sends command to one or more devices to save configuration from scratchpad to EEPROM
+// If optional argument deviceAddress is omitted the command is send to all devices
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::saveConfiguration(const uint8_t* deviceAddress = nullptr) {
+  
+  if (_wire->reset() == 0)
+    return false;
+  
+  if (deviceAddress == nullptr)
+    _wire->skip();
+  else
+    _wire->select(deviceAddress);
+  
+  _wire->write(COPYSCRATCH,parasite);
+
+  // Previous implementation in writeScratchPad() included a delay(20) here. This was added
+  // following discussion of issue millesburton#14 and was proposed without explanation on
+  // the Arduino forum: https://forum.arduino.cc/index.php?topic=179782.msg1886729#msg1886729
+  //
+  // Current implementation in this function follows specification in the datasheet.
+  
+  if (!parasite) {
+    // Specification: NV Write Cycle Time is typically 2ms, max 10ms
+    delay(10);
+  } else {
+    // Specification: strong pullup for at least 10ms while copy operation is in progress
+    activateExternalPullup();
+    delay(10);
+    deactivateExternalPullup();
+  }
+  
+  return _wire->reset() == 1;
+  
+}
+
+// Sends command to one device to recall configuration from EEPROM to scratchpad by index
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::recallConfigurationByIndex(uint8_t deviceIndex) {
+  DeviceAddress deviceAddress;
+  getAddress(deviceAddress, deviceIndex);
+  
+  return recallConfiguration(deviceAddress);
+}
+
+// Sends command to one or more devices to recall configuration from EEPROM to scratchpad
+// If optional argument deviceAddress is omitted the command is send to all devices
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress = nullptr) {
+  
+  if (_wire->reset() == 0)
+    return false;
+  
+  if (deviceAddress == nullptr)
+    _wire->skip();
+  else
+    _wire->select(deviceAddress);
+  
+  _wire->write(RECALLSCRATCH,parasite);
+
+  // Specification: Strong pullup only needed when writing to EEPROM (and temp conveersion)
+  unsigned long start = millis();
+  while (_wire->read_bit() == 0) {
+    if (millis() - start < 200) return false; // Datasheet doesn't specify typical/max duration
+    yield();
+  }
+  
+  return _wire->reset() == 1;
+  
+}
+
+// Sets the autoSaveConfiguration flag
+void DallasTemperature::setAutoSaveConfiguration(bool flag) {
+  autoSaveConfiguration = flag;
+}
+
+// Gets the autoSaveConfiguration flag
+bool DallasTemperature::getAutoSaveConfiguration() {
+  return autoSaveConfiguration;
 }
 
 void DallasTemperature::activateExternalPullup() {

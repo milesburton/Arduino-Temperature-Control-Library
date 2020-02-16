@@ -151,7 +151,7 @@ public:
   
   // Sends command to one or more devices to save configuration from scratchpad to EEPROM
   // Returns true if no errors were encountered, false indicates failure
-  bool saveConfiguration(const uint8_t*);
+  bool saveConfiguration(const uint8_t* = nullptr);
   
   // Sends command to one device to recall configuration from EEPROM to scratchpad by index
   // Returns true if no errors were encountered, false indicates failure
@@ -159,7 +159,7 @@ public:
   
   // Sends command to one or more devices to recall configuration from EEPROM to scratchpad
   // Returns true if no errors were encountered, false indicates failure
-  bool recallConfiguration(const uint8_t*);
+  bool recallConfiguration(const uint8_t* = nullptr);
   
   // Sets the autoSaveConfiguration flag
   void setAutoSaveConfiguration(bool);

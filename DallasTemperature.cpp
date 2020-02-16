@@ -457,7 +457,7 @@ bool DallasTemperature::saveConfigurationByIndex(uint8_t deviceIndex) {
 // Sends command to one or more devices to save configuration from scratchpad to EEPROM
 // If optional argument deviceAddress is omitted the command is send to all devices
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::saveConfiguration(const uint8_t* deviceAddress = nullptr) {
+bool DallasTemperature::saveConfiguration(const uint8_t* deviceAddress) {
   
   if (_wire->reset() == 0)
     return false;
@@ -501,7 +501,7 @@ bool DallasTemperature::recallConfigurationByIndex(uint8_t deviceIndex) {
 // Sends command to one or more devices to recall configuration from EEPROM to scratchpad
 // If optional argument deviceAddress is omitted the command is send to all devices
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress = nullptr) {
+bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress) {
   
   if (_wire->reset() == 0)
     return false;

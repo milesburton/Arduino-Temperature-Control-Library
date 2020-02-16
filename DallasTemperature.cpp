@@ -1,4 +1,4 @@
-// This library is free software; you can redistribute it and/or
+﻿// This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
@@ -89,7 +89,7 @@ void DallasTemperature::setOneWire(OneWire* _oneWire) {
 	bitResolution = 9;
 	waitForConversion = true;
 	checkForConversion = true;
-  autoSaveConfiguration = true;
+  autoSaveScratchPad = true;
 
 }
 
@@ -212,8 +212,8 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 	if (deviceAddress[0] != DS18S20MODEL)
 		_wire->write(scratchPad[CONFIGURATION]);
 
-  if (getAutoSaveConfiguration())
-    saveConfiguration(deviceAddress);
+  if (autoSaveScratchPad)
+    saveScratchPad(deviceAddress);
   else
     _wire->reset();
 }
@@ -443,21 +443,21 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 
 }
 
-// Sends command to one device to save configuration from scratchpad to EEPROM by index
+// Sends command to one device to save values from scratchpad to EEPROM by index
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::saveConfigurationByIndex(uint8_t deviceIndex) {
+bool DallasTemperature::saveScratchPadByIndex(uint8_t deviceIndex) {
   
   DeviceAddress deviceAddress;
   getAddress(deviceAddress, deviceIndex);
   
-  return saveConfiguration(deviceAddress);
+  return saveScratchPad(deviceAddress);
   
 }
 
-// Sends command to one or more devices to save configuration from scratchpad to EEPROM
+// Sends command to one or more devices to save values from scratchpad to EEPROM
 // If optional argument deviceAddress is omitted the command is send to all devices
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::saveConfiguration(const uint8_t* deviceAddress) {
+bool DallasTemperature::saveScratchPad(const uint8_t* deviceAddress) {
   
   if (_wire->reset() == 0)
     return false;
@@ -489,19 +489,19 @@ bool DallasTemperature::saveConfiguration(const uint8_t* deviceAddress) {
   
 }
 
-// Sends command to one device to recall configuration from EEPROM to scratchpad by index
+// Sends command to one device to recall values from EEPROM to scratchpad by index
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::recallConfigurationByIndex(uint8_t deviceIndex) {
+bool DallasTemperature::recallScratchPadByIndex(uint8_t deviceIndex) {
   DeviceAddress deviceAddress;
   getAddress(deviceAddress, deviceIndex);
   
-  return recallConfiguration(deviceAddress);
+  return recallScratchPad(deviceAddress);
 }
 
-// Sends command to one or more devices to recall configuration from EEPROM to scratchpad
+// Sends command to one or more devices to recall values from EEPROM to scratchpad
 // If optional argument deviceAddress is omitted the command is send to all devices
 // Returns true if no errors were encountered, false indicates failure
-bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress) {
+bool DallasTemperature::recallScratchPad(const uint8_t* deviceAddress) {
   
   if (_wire->reset() == 0)
     return false;
@@ -516,7 +516,8 @@ bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress) {
   // Specification: Strong pullup only needed when writing to EEPROM (and temp conveersion)
   unsigned long start = millis();
   while (_wire->read_bit() == 0) {
-    if (millis() - start < 200) return false; // Datasheet doesn't specify typical/max duration
+    // Datasheet doesn't specify typical/max duration, testing reveals typically within 1ms
+    if (millis() - start > 10) return false;
     yield();
   }
   
@@ -524,14 +525,14 @@ bool DallasTemperature::recallConfiguration(const uint8_t* deviceAddress) {
   
 }
 
-// Sets the autoSaveConfiguration flag
-void DallasTemperature::setAutoSaveConfiguration(bool flag) {
-  autoSaveConfiguration = flag;
+// Sets the autoSaveScratchPad flag
+void DallasTemperature::setAutoSaveScratchPad(bool flag) {
+  autoSaveScratchPad = flag;
 }
 
-// Gets the autoSaveConfiguration flag
-bool DallasTemperature::getAutoSaveConfiguration() {
-  return autoSaveConfiguration;
+// Gets the autoSaveScratchPad flag
+bool DallasTemperature::getAutoSaveScratchPad() {
+  return autoSaveScratchPad;
 }
 
 void DallasTemperature::activateExternalPullup() {

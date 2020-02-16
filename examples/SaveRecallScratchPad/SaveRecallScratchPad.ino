@@ -1,9 +1,9 @@
 //
-//    FILE: SaveRecallConfiguration.ino
+//    FILE: SaveRecallScratchPad.ino
 //  AUTHOR: GitKomodo
 // VERSION: 0.0.1
 // PURPOSE: Show DallasTemperature lib functionality to
-//          save/recall values to/from EEPROM
+//          save/recall ScratchPad values to/from EEPROM
 //
 // HISTORY:
 // 0.0.1 = 2020-02-16 initial version
@@ -21,8 +21,8 @@ DeviceAddress deviceAddress;
 void setup()
 {
   Serial.begin(9600);
-  Serial.println("DallasTemperature Library Save / Recall Configuration DEMO");
-  Serial.println("==========================================================");
+  Serial.println("DallasTemperature Library Save / Recall ScratchPad DEMO");
+  Serial.println("=======================================================");
   Serial.println("\nNote: DS1820 and DS18S20 sensors don't have a resolution configuration register\nand will always show resolution 12.");
   
   sensor.begin();
@@ -39,14 +39,14 @@ void setup()
   printValues();
   
   Serial.println("\nTurning automatic saving OFF!");
-  sensor.setAutoSaveConfiguration(false);
+  sensor.setAutoSaveScratchPad(false);
   
   Serial.println("\nSetting resolution to 11 and user data to 23 and 29. The values are now only\nwritten to the scratchpad.");
   setValues(11,23,29);
   printValues();
   
   Serial.println("\nRecalling values from EEPROM. The scratchpad now contains resolution 10 and user\ndata 17 and 19 again.");
-  sensor.recallConfiguration(deviceAddress);
+  sensor.recallScratchPad(deviceAddress);
   printValues();
 
   Serial.println("\nAddressing all devices");
@@ -57,14 +57,14 @@ void setup()
   printValues();
   
   Serial.println("\nSaving values to EEPROM without a specific device address.");
-  sensor.saveConfiguration();
+  sensor.saveScratchPad();
   
   Serial.println("\nSetting resolution to 10 and user data to 17 and 19.  The values are only\nwritten to the scratchpad.");
   setValues(10,17,19);
   printValues();
   
   Serial.println("\nRecalling values from EEPROM without a specific device address. The scratchpad\nnow contains resolution 11 and user data 23 and 29 again.");
-  sensor.recallConfiguration();
+  sensor.recallScratchPad();
   printValues();
 }
 

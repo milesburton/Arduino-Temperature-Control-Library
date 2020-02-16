@@ -145,27 +145,27 @@ public:
 
   int16_t millisToWaitForConversion(uint8_t);
   
-  // Sends command to one device to save configuration from scratchpad to EEPROM by index
+  // Sends command to one device to save values from scratchpad to EEPROM by index
   // Returns true if no errors were encountered, false indicates failure
-  bool saveConfigurationByIndex(uint8_t);
+  bool saveScratchPadByIndex(uint8_t);
   
-  // Sends command to one or more devices to save configuration from scratchpad to EEPROM
+  // Sends command to one or more devices to save values from scratchpad to EEPROM
   // Returns true if no errors were encountered, false indicates failure
-  bool saveConfiguration(const uint8_t* = nullptr);
+  bool saveScratchPad(const uint8_t* = nullptr);
   
-  // Sends command to one device to recall configuration from EEPROM to scratchpad by index
+  // Sends command to one device to recall values from EEPROM to scratchpad by index
   // Returns true if no errors were encountered, false indicates failure
-  bool recallConfigurationByIndex(uint8_t);
+  bool recallScratchPadByIndex(uint8_t);
   
-  // Sends command to one or more devices to recall configuration from EEPROM to scratchpad
+  // Sends command to one or more devices to recall values from EEPROM to scratchpad
   // Returns true if no errors were encountered, false indicates failure
-  bool recallConfiguration(const uint8_t* = nullptr);
+  bool recallScratchPad(const uint8_t* = nullptr);
   
-  // Sets the autoSaveConfiguration flag
-  void setAutoSaveConfiguration(bool);
+  // Sets the autoSaveScratchPad flag
+  void setAutoSaveScratchPad(bool);
   
-  // Gets the autoSaveConfiguration flag
-  bool getAutoSaveConfiguration(void);
+  // Gets the autoSaveScratchPad flag
+  bool getAutoSaveScratchPad(void);
 
 #if REQUIRESALARMS
 
@@ -262,8 +262,8 @@ private:
 	// used to requestTemperature to dynamically check if a conversion is complete
 	bool checkForConversion;
 
-  // used to determine if configuration will be saved from scratchpad to EEPROM on every scratchpad write
-  bool autoSaveConfiguration;
+  // used to determine if values will be saved from scratchpad to EEPROM on every scratchpad write
+  bool autoSaveScratchPad;
 
 	// count of devices on the bus
 	uint8_t devices;

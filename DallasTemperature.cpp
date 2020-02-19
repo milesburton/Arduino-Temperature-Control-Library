@@ -15,10 +15,10 @@ extern "C" {
 
 // OneWire commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad
-#define COPYSCRATCH     0x48  // Copy EEPROM
-#define READSCRATCH     0xBE  // Read EEPROM
-#define WRITESCRATCH    0x4E  // Write to EEPROM
-#define RECALLSCRATCH   0xB8  // Reload from last known
+#define COPYSCRATCH     0x48  // Copy scratchpad to EEPROM
+#define READSCRATCH     0xBE  // Read from scratchpad
+#define WRITESCRATCH    0x4E  // Write to scratchpad
+#define RECALLSCRATCH   0xB8  // Recall from EEPROM to scratchpad
 #define READPOWERSUPPLY 0xB4  // Determine if device needs parasite power
 #define ALARMSEARCH     0xEC  // Query bus for devices with an alarm condition
 
@@ -41,20 +41,15 @@ extern "C" {
 
 #define NO_ALARM_HANDLER ((AlarmHandler *)0)
 
-DallasTemperature::DallasTemperature()
-{
+DallasTemperature::DallasTemperature() {
 #if REQUIRESALARMS
 	setAlarmHandler(NO_ALARM_HANDLER);
 #endif
     useExternalPullup = false;
 }
-DallasTemperature::DallasTemperature(OneWire* _oneWire)
-{
+
+DallasTemperature::DallasTemperature(OneWire* _oneWire) : DallasTemperature() {
 	setOneWire(_oneWire);
-#if REQUIRESALARMS
-	setAlarmHandler(NO_ALARM_HANDLER);
-#endif
-    useExternalPullup = false;
 }
 
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
@@ -74,8 +69,8 @@ bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
  * Constructs DallasTemperature with strong pull-up turned on. Strong pull-up is mandated in DS18B20 datasheet for parasitic
  * power (2 wires) setup. (https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf, p. 7, section 'Powering the DS18B20').
  */
-DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire){
-    setPullupPin(_pullupPin);
+DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : DallasTemperature(_oneWire) {
+  setPullupPin(_pullupPin);
 }
 
 void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
@@ -267,7 +262,7 @@ void DallasTemperature::setResolution(uint8_t newResolution) {
 }
 
 // set resolution of a device to 9, 10, 11, or 12 bits
-// if new resolution is out of range, 9 bits is used.
+// if new resolution is out of range, it is constrained.
 bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 		uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
 
@@ -428,16 +423,16 @@ bool DallasTemperature::requestTemperaturesByAddress(
 // Continue to check if the IC has responded with a temperature
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 
-	unsigned long delms = millisToWaitForConversion(bitResolution);
-	if (checkForConversion && !parasite) {
-		unsigned long start = millis();
-		while (!isConversionComplete() && (millis() - start < delms))
-			yield();
-	} else {
-        activateExternalPullup();
-		delay(delms);
-        deactivateExternalPullup();
-	}
+  if (checkForConversion && !parasite) {
+    unsigned long start = millis();
+    while (!isConversionComplete() && (millis() - start < MAX_CONVERSION_TIMEOUT ))
+      yield();
+  } else {
+    unsigned long delms = millisToWaitForConversion(bitResolution);
+    activateExternalPullup();
+    delay(delms);
+    deactivateExternalPullup();
+  }
 
 }
 
@@ -480,11 +475,10 @@ bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex) {
 // Fetch temperature for device index
 float DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
 
-	DeviceAddress deviceAddress;
+DeviceAddress deviceAddress;
 	if (!getAddress(deviceAddress, deviceIndex)) {
 		return DEVICE_DISCONNECTED_C;
 	}
-
 	return getTempC((uint8_t*) deviceAddress);
 
 }

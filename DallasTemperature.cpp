@@ -39,7 +39,11 @@ extern "C" {
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
+#define MAX_CONVERSION_TIMEOUT		750
+
+// Alarm handler
 #define NO_ALARM_HANDLER ((AlarmHandler *)0)
+
 
 DallasTemperature::DallasTemperature() {
 #if REQUIRESALARMS
@@ -112,7 +116,8 @@ void DallasTemperature::begin(void) {
 				if (!parasite && readPowerSupply(deviceAddress))
 					parasite = true;
 
-				bitResolution = max(bitResolution, getResolution(deviceAddress));
+				uint8_t b = getResolution(deviceAddress);
+				if (b > bitResolution) bitResolution = b;
 			}
 		}
 	}
@@ -254,68 +259,85 @@ void DallasTemperature::setResolution(uint8_t newResolution) {
 
 	bitResolution = constrain(newResolution, 9, 12);
 	DeviceAddress deviceAddress;
-	for (int i = 0; i < devices; i++) {
+	for (uint8_t i = 0; i < devices; i++) {
 		getAddress(deviceAddress, i);
 		setResolution(deviceAddress, bitResolution, true);
 	}
-
 }
+
+/*  PROPOSAL */
 
 // set resolution of a device to 9, 10, 11, or 12 bits
-// if new resolution is out of range, it is constrained.
+// if new resolution is out of range, 9 bits is used.
 bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
-		uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
+                                      uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
 
-	// ensure same behavior as setResolution(uint8_t newResolution)
-	newResolution = constrain(newResolution, 9, 12);
+  bool success = false;
 
-	// return when stored value == new value
-	if (getResolution(deviceAddress) == newResolution)
-		return true;
+  // DS1820 and DS18S20 have no resolution configuration register
+  if (deviceAddress[0] == DS18S20MODEL)
+  {
+    success = true;
+  }
+  else
+  {
 
-	ScratchPad scratchPad;
-	if (isConnected(deviceAddress, scratchPad)) {
+   // handle the sensors with configuration register
+    newResolution = constrain(newResolution, 9, 12);
+	
+    uint8_t newValue = 0;
+    ScratchPad scratchPad;
 
-		// DS1820 and DS18S20 have no resolution configuration register
-		if (deviceAddress[0] != DS18S20MODEL) {
+    // we can only update the sensor if it is connected
+    if (isConnected(deviceAddress, scratchPad))
+    {
+      switch (newResolution) {
+        case 12:
+          newValue = TEMP_12_BIT;
+          break;
+        case 11:
+          newValue = TEMP_11_BIT;
+          break;
+        case 10:
+          newValue = TEMP_10_BIT;
+          break;
+        case 9:
+        default:
+          newValue = TEMP_9_BIT;
+          break;
+      }
 
-			switch (newResolution) {
-			case 12:
-				scratchPad[CONFIGURATION] = TEMP_12_BIT;
-				break;
-			case 11:
-				scratchPad[CONFIGURATION] = TEMP_11_BIT;
-				break;
-			case 10:
-				scratchPad[CONFIGURATION] = TEMP_10_BIT;
-				break;
-			case 9:
-			default:
-				scratchPad[CONFIGURATION] = TEMP_9_BIT;
-				break;
-			}
-			writeScratchPad(deviceAddress, scratchPad);
+      // if it needs to be updated we write the new value
+      if (scratchPad[CONFIGURATION] != newValue)
+      {
+		scratchPad[CONFIGURATION] = newValue;
+        writeScratchPad(deviceAddress, scratchPad);
+      }
+      // done
+      success = true;
+    }
+  }
 
-			// without calculation we can always set it to max
-			bitResolution = max(bitResolution, newResolution);
+  // do we need to update the max resolution used?
+  if (skipGlobalBitResolutionCalculation == false)
+  {
+    bitResolution = newResolution;
+    if (devices > 1)
+    {
+      for (uint8_t i = 0; i < devices; i++)
+      {
+        if (bitResolution == 12) break;
+        DeviceAddress deviceAddr;
+        getAddress(deviceAddr, i);
+        uint8_t b = getResolution(deviceAddr);
+        if (b > bitResolution) bitResolution = b;
+      }
+    }
+  }
 
-			if (!skipGlobalBitResolutionCalculation
-					&& (bitResolution > newResolution)) {
-				bitResolution = newResolution;
-				DeviceAddress deviceAddr;
-				for (int i = 0; i < devices; i++) {
-					getAddress(deviceAddr, i);
-					bitResolution = max(bitResolution,
-							getResolution(deviceAddr));
-				}
-			}
-		}
-		return true;  // new value set
-	}
-
-	return false;
-
+  return success;
 }
+
 
 // returns the global resolution
 uint8_t DallasTemperature::getResolution() {
@@ -349,6 +371,7 @@ uint8_t DallasTemperature::getResolution(const uint8_t* deviceAddress) {
 	return 0;
 
 }
+
 
 // sets the value of the waitForConversion flag
 // TRUE : function requestTemperature() etc returns when conversion is ready
@@ -475,12 +498,11 @@ bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex) {
 // Fetch temperature for device index
 float DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
 
-DeviceAddress deviceAddress;
+	DeviceAddress deviceAddress;
 	if (!getAddress(deviceAddress, deviceIndex)) {
 		return DEVICE_DISCONNECTED_C;
 	}
 	return getTempC((uint8_t*) deviceAddress);
-
 }
 
 // Fetch temperature for device index

@@ -37,9 +37,6 @@
 #define DEVICE_DISCONNECTED_F -196.6
 #define DEVICE_DISCONNECTED_RAW -7040
 
-// Other
-#define MAX_CONVERSION_TIMEOUT 750
-
 // For readPowerSupply on oneWire bus
 #ifndef nullptr
 #define nullptr NULL

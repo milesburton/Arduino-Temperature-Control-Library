@@ -14,27 +14,44 @@ DeviceAddress	KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
+setOneWire	KEYWORD2
+setPullupPin	KEYWORD2
 setResolution	KEYWORD2
 getResolution	KEYWORD2
+getTemp	KEYWORD2
 getTempC	KEYWORD2
 toFahrenheit	KEYWORD2
 getTempF	KEYWORD2
 getTempCByIndex	KEYWORD2
 getTempFByIndex	KEYWORD2
+rawToCelsius	KEYWORD2
+rawToFahrenheit	KEYWORD2
 setWaitForConversion	KEYWORD2
 getWaitForConversion	KEYWORD2
 requestTemperatures	KEYWORD2
 requestTemperaturesByAddress	KEYWORD2
 requestTemperaturesByIndex	KEYWORD2
+setCheckForConversion	KEYWORD2
+getCheckForConversion	KEYWORD2
+isConversionComplete	KEYWORD2
+millisToWaitForConversion	KEYWORD2
 isParasitePowerMode	KEYWORD2
 begin	KEYWORD2
 getDeviceCount	KEYWORD2
+getDS18Count	KEYWORD2
 getAddress	KEYWORD2
 validAddress	KEYWORD2
+validFamily	KEYWORD2
 isConnected	KEYWORD2
 readScratchPad	KEYWORD2
 writeScratchPad	KEYWORD2
 readPowerSupply	KEYWORD2
+saveScratchPadByIndex	KEYWORD2
+saveScratchPad	KEYWORD2
+recallScratchPadByIndex	KEYWORD2
+recallScratchPad	KEYWORD2
+setAutoSaveScratchPad	KEYWORD2
+getAutoSaveScratchPad	KEYWORD2
 setHighAlarmTemp	KEYWORD2
 setLowAlarmTemp	KEYWORD2
 getHighAlarmTemp	KEYWORD2
@@ -43,12 +60,19 @@ resetAlarmSearch	KEYWORD2
 alarmSearch	KEYWORD2
 hasAlarm	KEYWORD2
 toCelsius	KEYWORD2
-processAlarmss	KEYWORD2
-setAlarmHandlers	KEYWORD2
-defaultAlarmHandler	KEYWORD2
+processAlarms	KEYWORD2
+setAlarmHandler	KEYWORD2
+hasAlarmHandler	KEYWORD2
+setUserData	KEYWORD2
+setUserDataByIndex	KEYWORD2
+getUserData	KEYWORD2
+getUserDataByIndex	KEYWORD2
 calculateTemperature	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
+DEVICE_DISCONNECTED_C	LITERAL1
+DEVICE_DISCONNECTED_F	LITERAL1
+DEVICE_DISCONNECTED_RAW	LITERAL1

@@ -448,7 +448,7 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 bool DallasTemperature::saveScratchPadByIndex(uint8_t deviceIndex) {
   
   DeviceAddress deviceAddress;
-  getAddress(deviceAddress, deviceIndex);
+  if (!getAddress(deviceAddress, deviceIndex)) return false;
   
   return saveScratchPad(deviceAddress);
   
@@ -469,19 +469,13 @@ bool DallasTemperature::saveScratchPad(const uint8_t* deviceAddress) {
   
   _wire->write(COPYSCRATCH,parasite);
 
-  // Previous implementation in writeScratchPad() included a delay(20) here. This was added
-  // following discussion of issue millesburton#14 and was proposed without explanation on
-  // the Arduino forum: https://forum.arduino.cc/index.php?topic=179782.msg1886729#msg1886729
-  //
-  // Current implementation in this function follows specification in the datasheet.
-  
+  // Specification: NV Write Cycle Time is typically 2ms, max 10ms
+  // Waiting 20ms to allow for sensors that take longer in practice
   if (!parasite) {
-    // Specification: NV Write Cycle Time is typically 2ms, max 10ms
-    delay(10);
+    delay(20);
   } else {
-    // Specification: strong pullup for at least 10ms while copy operation is in progress
     activateExternalPullup();
-    delay(10);
+    delay(20);
     deactivateExternalPullup();
   }
   
@@ -492,10 +486,12 @@ bool DallasTemperature::saveScratchPad(const uint8_t* deviceAddress) {
 // Sends command to one device to recall values from EEPROM to scratchpad by index
 // Returns true if no errors were encountered, false indicates failure
 bool DallasTemperature::recallScratchPadByIndex(uint8_t deviceIndex) {
+
   DeviceAddress deviceAddress;
-  getAddress(deviceAddress, deviceIndex);
+  if (!getAddress(deviceAddress, deviceIndex)) return false;
   
   return recallScratchPad(deviceAddress);
+
 }
 
 // Sends command to one or more devices to recall values from EEPROM to scratchpad
@@ -513,11 +509,11 @@ bool DallasTemperature::recallScratchPad(const uint8_t* deviceAddress) {
   
   _wire->write(RECALLSCRATCH,parasite);
 
-  // Specification: Strong pullup only needed when writing to EEPROM (and temp conveersion)
+  // Specification: Strong pullup only needed when writing to EEPROM (and temp conversion)
   unsigned long start = millis();
   while (_wire->read_bit() == 0) {
     // Datasheet doesn't specify typical/max duration, testing reveals typically within 1ms
-    if (millis() - start > 10) return false;
+    if (millis() - start > 20) return false;
     yield();
   }
   

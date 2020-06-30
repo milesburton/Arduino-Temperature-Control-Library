@@ -284,7 +284,6 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 
    // handle the sensors with configuration register
     newResolution = constrain(newResolution, 9, 12);
-	
     uint8_t newValue = 0;
     ScratchPad scratchPad;
 

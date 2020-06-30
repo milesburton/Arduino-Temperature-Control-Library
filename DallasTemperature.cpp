@@ -1,4 +1,4 @@
-// This library is free software; you can redistribute it and/or
+﻿// This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
@@ -93,6 +93,7 @@ void DallasTemperature::setOneWire(OneWire* _oneWire) {
 	bitResolution = 9;
 	waitForConversion = true;
 	checkForConversion = true;
+  autoSaveScratchPad = true;
 
 }
 
@@ -216,20 +217,10 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 	if (deviceAddress[0] != DS18S20MODEL)
 		_wire->write(scratchPad[CONFIGURATION]);
 
-	_wire->reset();
-
-	// save the newly written values to eeprom
-	_wire->select(deviceAddress);
-	_wire->write(COPYSCRATCH, parasite);
-	delay(20); // <--- added 20ms delay to allow 10ms long EEPROM write operation (as specified by datasheet)
-
-    if (parasite) {
-		activateExternalPullup();
-		delay(10); // 10ms delay
-		deactivateExternalPullup();
-	}
+  if (autoSaveScratchPad)
+    saveScratchPad(deviceAddress);
+  else
     _wire->reset();
-
 }
 
 // returns true if parasite mode is used (2 wire)
@@ -472,6 +463,94 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 		return 750;
 	}
 
+}
+
+// Sends command to one device to save values from scratchpad to EEPROM by index
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::saveScratchPadByIndex(uint8_t deviceIndex) {
+  
+  DeviceAddress deviceAddress;
+  if (!getAddress(deviceAddress, deviceIndex)) return false;
+  
+  return saveScratchPad(deviceAddress);
+  
+}
+
+// Sends command to one or more devices to save values from scratchpad to EEPROM
+// If optional argument deviceAddress is omitted the command is send to all devices
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::saveScratchPad(const uint8_t* deviceAddress) {
+  
+  if (_wire->reset() == 0)
+    return false;
+  
+  if (deviceAddress == nullptr)
+    _wire->skip();
+  else
+    _wire->select(deviceAddress);
+  
+  _wire->write(COPYSCRATCH,parasite);
+
+  // Specification: NV Write Cycle Time is typically 2ms, max 10ms
+  // Waiting 20ms to allow for sensors that take longer in practice
+  if (!parasite) {
+    delay(20);
+  } else {
+    activateExternalPullup();
+    delay(20);
+    deactivateExternalPullup();
+  }
+  
+  return _wire->reset() == 1;
+  
+}
+
+// Sends command to one device to recall values from EEPROM to scratchpad by index
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::recallScratchPadByIndex(uint8_t deviceIndex) {
+
+  DeviceAddress deviceAddress;
+  if (!getAddress(deviceAddress, deviceIndex)) return false;
+  
+  return recallScratchPad(deviceAddress);
+
+}
+
+// Sends command to one or more devices to recall values from EEPROM to scratchpad
+// If optional argument deviceAddress is omitted the command is send to all devices
+// Returns true if no errors were encountered, false indicates failure
+bool DallasTemperature::recallScratchPad(const uint8_t* deviceAddress) {
+  
+  if (_wire->reset() == 0)
+    return false;
+  
+  if (deviceAddress == nullptr)
+    _wire->skip();
+  else
+    _wire->select(deviceAddress);
+  
+  _wire->write(RECALLSCRATCH,parasite);
+
+  // Specification: Strong pullup only needed when writing to EEPROM (and temp conversion)
+  unsigned long start = millis();
+  while (_wire->read_bit() == 0) {
+    // Datasheet doesn't specify typical/max duration, testing reveals typically within 1ms
+    if (millis() - start > 20) return false;
+    yield();
+  }
+  
+  return _wire->reset() == 1;
+  
+}
+
+// Sets the autoSaveScratchPad flag
+void DallasTemperature::setAutoSaveScratchPad(bool flag) {
+  autoSaveScratchPad = flag;
+}
+
+// Gets the autoSaveScratchPad flag
+bool DallasTemperature::getAutoSaveScratchPad() {
+  return autoSaveScratchPad;
 }
 
 void DallasTemperature::activateExternalPullup() {

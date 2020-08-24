@@ -618,9 +618,9 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 	 extended resolution temperature can then be calculated using the
 	 following equation:
 
-	 COUNT_PER_C - COUNT_REMAIN
+	                                  COUNT_PER_C - COUNT_REMAIN
 	 TEMPERATURE = TEMP_READ - 0.25 + --------------------------
-	 COUNT_PER_C
+	                                         COUNT_PER_C
 
 	 Hagai Shatz simplified this to integer arithmetic for a 12 bits
 	 value for a DS18S20, and James Cameron added legacy DS1820 support.

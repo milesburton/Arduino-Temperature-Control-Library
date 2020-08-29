@@ -33,6 +33,10 @@ extern "C" {
 #define COUNT_PER_C     7
 #define SCRATCHPAD_CRC  8
 
+// DSROM FIELDS
+#define DSROM_FAMILY    0
+#define DSROM_CRC       7
+
 // Device resolution
 #define TEMP_9_BIT  0x1F //  9 bit
 #define TEMP_10_BIT 0x3F // 10 bit
@@ -57,7 +61,7 @@ DallasTemperature::DallasTemperature(OneWire* _oneWire) : DallasTemperature() {
 }
 
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
-	switch (deviceAddress[0]) {
+	switch (deviceAddress[DSROM_FAMILY]) {
 	case DS18S20MODEL:
 	case DS18B20MODEL:
 	case DS1822MODEL:
@@ -135,7 +139,7 @@ uint8_t DallasTemperature::getDS18Count(void) {
 
 // returns true if address is valid
 bool DallasTemperature::validAddress(const uint8_t* deviceAddress) {
-	return (_wire->crc8(deviceAddress, 7) == deviceAddress[7]);
+	return (_wire->crc8(deviceAddress, 7) == deviceAddress[DSROM_CRC]);
 }
 
 // finds an address at a given index on the bus
@@ -214,7 +218,7 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress,
 	_wire->write(scratchPad[LOW_ALARM_TEMP]); // low alarm temp
 
 	// DS1820 and DS18S20 have no configuration register
-	if (deviceAddress[0] != DS18S20MODEL)
+	if (deviceAddress[DSROM_FAMILY] != DS18S20MODEL)
 		_wire->write(scratchPad[CONFIGURATION]);
 
   if (autoSaveScratchPad)
@@ -266,7 +270,7 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
   bool success = false;
 
   // DS1820 and DS18S20 have no resolution configuration register
-  if (deviceAddress[0] == DS18S20MODEL)
+  if (deviceAddress[DSROM_FAMILY] == DS18S20MODEL)
   {
     success = true;
   }
@@ -339,7 +343,7 @@ uint8_t DallasTemperature::getResolution() {
 uint8_t DallasTemperature::getResolution(const uint8_t* deviceAddress) {
 
 	// DS1820 and DS18S20 have no resolution configuration register
-	if (deviceAddress[0] == DS18S20MODEL)
+	if (deviceAddress[DSROM_FAMILY] == DS18S20MODEL)
 		return 12;
 
 	ScratchPad scratchPad;
@@ -628,7 +632,7 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 	 See - http://myarduinotoy.blogspot.co.uk/2013/02/12bit-result-from-ds18s20.html
 	 */
 
-	if ((deviceAddress[0] == DS18S20MODEL) && (scratchPad[COUNT_PER_C] != 0)) {
+	if ((deviceAddress[DSROM_FAMILY] == DS18S20MODEL) && (scratchPad[COUNT_PER_C] != 0)) {
 		fpTemperature = ((fpTemperature & 0xfff0) << 3) - 32
 				+ (((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7)
 						/ scratchPad[COUNT_PER_C]);

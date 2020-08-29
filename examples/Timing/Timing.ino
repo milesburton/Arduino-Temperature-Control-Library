@@ -1,13 +1,14 @@
 //
 //    FILE: Timing.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.0.2
+// VERSION: 0.0.3
 // PURPOSE: show performance of DallasTemperature lib 
 //          compared to datasheet times per resolution
 //
 // HISTORY:
-// 0.0.1 = 2017-07-25 initial version
-// 0.0.2 = 2020-02-13 updates to work with current lib version
+// 0.0.1    2017-07-25 initial version
+// 0.0.2    2020-02-13 updates to work with current lib version
+// 0.0.3    2020-02-20 added timing measurement of setResolution
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
@@ -39,7 +40,13 @@ void loop()
   Serial.println("RES\tTIME\tACTUAL\tGAIN");
   for (int r = 9; r < 13; r++)
   {
+    start = micros();
     sensor.setResolution(r);
+    Serial.println(micros() - start);
+
+    start = micros();
+    sensor.setResolution(r);
+    Serial.println(micros() - start);
 
     uint32_t duration = run(20);
     float avgDuration = duration / 20.0;

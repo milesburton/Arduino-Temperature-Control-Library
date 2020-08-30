@@ -722,12 +722,12 @@ void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data) {
 
 // Convert float Celsius to Fahrenheit
 float DallasTemperature::toFahrenheit(float celsius) {
-	return (celsius * 1.8) + 32;
+	return (celsius * 1.8f) + 32.0f;
 }
 
 // Convert float Fahrenheit to Celsius
 float DallasTemperature::toCelsius(float fahrenheit) {
-	return (fahrenheit - 32) * 0.555555556;
+	return (fahrenheit - 32.0f) * 0.555555556f;
 }
 
 // convert from raw to Celsius
@@ -736,7 +736,7 @@ float DallasTemperature::rawToCelsius(int16_t raw) {
 	if (raw <= DEVICE_DISCONNECTED_RAW)
 		return DEVICE_DISCONNECTED_C;
 	// C = RAW/128
-	return (float) raw * 0.0078125;
+	return (float) raw * 0.0078125f;
 
 }
 
@@ -747,7 +747,7 @@ float DallasTemperature::rawToFahrenheit(int16_t raw) {
 		return DEVICE_DISCONNECTED_F;
 	// C = RAW/128
 	// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
-	return ((float) raw * 0.0140625) + 32;
+	return ((float) raw * 0.0140625f) + 32.0f;
 
 }
 

@@ -52,7 +52,7 @@ Rob Tillaart [rob.tillaart@gmail.com] added async modus (v3.7.0)
 ## Website
 
 
-You can find the latest version of the library at
+Additional documentation may be found here
 https://www.milesburton.com/Dallas_Temperature_Control_Library
 
 # License

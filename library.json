@@ -30,11 +30,9 @@
   ],
   "dependencies":
   {
-    "name": "OneWire",
-    "authors": "Paul Stoffregen",
-    "frameworks": "arduino"
+    "paulstoffregen/OneWire": "^2.3.5"
   },
-  "version": "3.9.0",
+  "version": "3.9.1",
   "frameworks": "arduino",
   "platforms": "*"
 }

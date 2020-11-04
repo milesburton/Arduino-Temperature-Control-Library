@@ -454,7 +454,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
-int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
+uint16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 
 	switch (bitResolution) {
 	case 9:

@@ -37,6 +37,18 @@
 #define DEVICE_DISCONNECTED_F -427
 #define DEVICE_DISCONNECTED_RAW -32640
 
+#define DEVICE_FAULT_OPEN_C -254
+#define DEVICE_FAULT_OPEN_F -425.199982
+#define DEVICE_FAULT_OPEN_RAW -32512
+
+#define DEVICE_FAULT_SHORTGND_C -253
+#define DEVICE_FAULT_SHORTGND_F -423.399994
+#define DEVICE_FAULT_SHORTGND_RAW -32384
+
+#define DEVICE_FAULT_SHORTVDD_C -252
+#define DEVICE_FAULT_SHORTVDD_F -421.599976
+#define DEVICE_FAULT_SHORTVDD_RAW -32256
+
 // For readPowerSupply on oneWire bus
 // definition of nullptr for C++ < 11, using official workaround:
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2431.pdf

@@ -604,11 +604,53 @@ float DallasTemperature::getTempFByIndex(uint8_t deviceIndex) {
 }
 
 // reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
-int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
+int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
                                                 uint8_t* scratchPad) {
 
-	int16_t fpTemperature = (((int16_t) scratchPad[TEMP_MSB]) << 11)
-	                        | (((int16_t) scratchPad[TEMP_LSB]) << 3);
+	int32_t fpTemperature = 0;
+
+	// looking thru the spec sheets of all supported devices, bit 15 is always the signing bit
+	// Detected if signed
+	int32_t neg = 0x0;
+	if (scratchPad[TEMP_MSB] & 0x80)
+		neg = 0xFFF80000;
+
+	// detect MAX31850
+	// The temp range on a MAX31850 can far exceed other models, causing an overrun @ 256C
+	// Based on the spec sheets for the MAX31850, bit 7 is always 1
+	// Whereas the DS1825 bit 7 is always 0
+	// DS1825   - https://datasheets.maximintegrated.com/en/ds/DS1825.pdf
+	// MAX31850 - https://datasheets.maximintegrated.com/en/ds/MAX31850-MAX31851.pdf
+
+	if (deviceAddress[DSROM_FAMILY] == DS1825MODEL && scratchPad[CONFIGURATION] & 0x80 ) {
+		//Serial.print("  Detected MAX31850");
+		if (scratchPad[TEMP_LSB] & 1) { // Fault Detected
+			if (scratchPad[HIGH_ALARM_TEMP] & 1) {
+				//Serial.println("open detected");
+				return DEVICE_FAULT_OPEN_RAW;
+			}
+			else if (scratchPad[HIGH_ALARM_TEMP] >> 1 & 1) {
+				//Serial.println("short to ground detected");
+				return DEVICE_FAULT_SHORTGND_RAW;
+			}
+			else if (scratchPad[HIGH_ALARM_TEMP] >> 2 & 1) {
+				//Serial.println("short to Vdd detected");
+				return DEVICE_FAULT_SHORTVDD_RAW;
+			}
+			else {
+				// We don't know why there's a fault, exit with disconnect value
+				return DEVICE_DISCONNECTED_RAW;
+			}
+		}
+		// We must mask out bit 1 (reserved) and 0 (fault) on TEMP_LSB
+		fpTemperature = (((int32_t) scratchPad[TEMP_MSB]) << 11)
+		                | (((int32_t) scratchPad[TEMP_LSB] & 0xFC) << 3)
+		                | neg;
+	} else {
+		fpTemperature = (((int16_t) scratchPad[TEMP_MSB]) << 11)
+		                | (((int16_t) scratchPad[TEMP_LSB]) << 3)
+		                | neg;
+	}
 
 	/*
 	 DS1820 and DS18S20 have a 9-bit temperature register.
@@ -649,7 +691,7 @@ int16_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-int16_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
+int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
 
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
@@ -734,7 +776,7 @@ float DallasTemperature::toCelsius(float fahrenheit) {
 }
 
 // convert from raw to Celsius
-float DallasTemperature::rawToCelsius(int16_t raw) {
+float DallasTemperature::rawToCelsius(int32_t raw) {
 
 	if (raw <= DEVICE_DISCONNECTED_RAW)
 		return DEVICE_DISCONNECTED_C;
@@ -757,7 +799,7 @@ int16_t DallasTemperature::celsiusToRaw(float celsius) {
 }
 
 // convert from raw to Fahrenheit
-float DallasTemperature::rawToFahrenheit(int16_t raw) {
+float DallasTemperature::rawToFahrenheit(int32_t raw) {
 
 	if (raw <= DEVICE_DISCONNECTED_RAW)
 		return DEVICE_DISCONNECTED_F;

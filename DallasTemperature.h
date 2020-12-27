@@ -29,13 +29,13 @@
 #define DS18S20MODEL 0x10  // also DS1820
 #define DS18B20MODEL 0x28  // also MAX31820
 #define DS1822MODEL  0x22
-#define DS1825MODEL  0x3B
+#define DS1825MODEL  0x3B  // also MAX31850
 #define DS28EA00MODEL 0x42
 
 // Error Codes
-#define DEVICE_DISCONNECTED_C -127
-#define DEVICE_DISCONNECTED_F -196.6
-#define DEVICE_DISCONNECTED_RAW -7040
+#define DEVICE_DISCONNECTED_C -255
+#define DEVICE_DISCONNECTED_F -427
+#define DEVICE_DISCONNECTED_RAW -32640
 
 // For readPowerSupply on oneWire bus
 // definition of nullptr for C++ < 11, using official workaround:

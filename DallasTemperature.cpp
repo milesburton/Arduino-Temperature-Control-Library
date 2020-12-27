@@ -5,7 +5,14 @@
 
 #include "DallasTemperature.h"
 
-#if ARDUINO >= 100
+// for Particle support
+// yield() is not a standard function, but instead wraps Particle process
+// https://community.particle.io/t/syscall-yield-operation/40708/2
+#if defined(PLATFORM_ID)  // Only defined if a Particle device
+inline void yield() {
+	Particle.process();
+}
+#elif ARDUINO >= 100
 #include "Arduino.h"
 #else
 extern "C" {
@@ -139,7 +146,7 @@ uint8_t DallasTemperature::getDS18Count(void) {
 
 // returns true if address is valid
 bool DallasTemperature::validAddress(const uint8_t* deviceAddress) {
-	return (_wire->crc8(deviceAddress, 7) == deviceAddress[DSROM_CRC]);
+	return (_wire->crc8((uint8_t*)deviceAddress, 7) == deviceAddress[DSROM_CRC]);
 }
 
 // finds an address at a given index on the bus

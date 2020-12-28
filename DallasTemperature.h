@@ -158,7 +158,9 @@ public:
 	// Is a conversion complete on the wire? Only applies to the first sensor on the wire.
 	bool isConversionComplete(void);
 
-  int16_t millisToWaitForConversion(uint8_t);
+  static uint16_t millisToWaitForConversion(uint8_t);
+  
+  uint16_t millisToWaitForConversion();
   
   // Sends command to one device to save values from scratchpad to EEPROM by index
   // Returns true if no errors were encountered, false indicates failure
@@ -243,6 +245,9 @@ public:
 
 	// convert from raw to Celsius
 	static float rawToCelsius(int16_t);
+
+    // convert from Celsius to raw
+	static int16_t celsiusToRaw(float);
 
 	// convert from raw to Fahrenheit
 	static float rawToFahrenheit(int16_t);

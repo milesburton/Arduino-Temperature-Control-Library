@@ -454,7 +454,7 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
-int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
+uint16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 
 	switch (bitResolution) {
 	case 9:
@@ -467,6 +467,11 @@ int16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 		return 750;
 	}
 
+}
+
+// returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
+uint16_t DallasTemperature::millisToWaitForConversion() {
+  return millisToWaitForConversion(bitResolution);
 }
 
 // Sends command to one device to save values from scratchpad to EEPROM by index
@@ -738,6 +743,19 @@ float DallasTemperature::rawToCelsius(int16_t raw) {
 	// C = RAW/128
 	return (float) raw * 0.0078125f;
 
+}
+
+// Convert from Celsius to raw returns temperature in raw integer format.
+// The rounding error in the conversion is smaller than 0.01°C
+// where the resolution of the sensor is at best 0.0625°C (in 12 bit mode).
+// Rounding error can be verified by running:
+//  for (float t=-55.; t<125.; t+=0.01)
+//  {
+//    Serial.println( DallasTemperature::rawToCelsius(DallasTemperature::celsiusToRaw(t))-t, 4 );
+//  }
+int16_t DallasTemperature::celsiusToRaw(float celsius) {
+
+    return static_cast<uint16_t>( celsius * 128.f );
 }
 
 // convert from raw to Fahrenheit

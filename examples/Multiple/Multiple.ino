@@ -102,7 +102,7 @@ void printAddress(DeviceAddress deviceAddress)
 void printTemperature(DeviceAddress deviceAddress)
 {
   float tempC = sensors.getTempC(deviceAddress);
-  if(tempC == DEVICE_DISCONNECTED_C) 
+  if (tempC == DEVICE_DISCONNECTED_C)
   {
     Serial.println("Error: Could not read temperature data");
     return;

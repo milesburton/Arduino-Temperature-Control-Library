@@ -43,7 +43,7 @@ void setup(void)
   deviceCount = sensors.getDeviceCount();
   Serial.print("#devices: ");
   Serial.println(deviceCount);
-  
+
   Serial.println();
   Serial.println("current ID's");
   for (uint8_t index = 0; index < deviceCount; index++)
@@ -55,7 +55,7 @@ void setup(void)
     int id = sensors.getUserData(t);
     Serial.println(id);
   }
-  
+
   Serial.println();
   Serial.print("Enter ID for batch: ");
   int c = 0;
@@ -63,7 +63,7 @@ void setup(void)
   while (c != '\n' && c != '\r')
   {
     c = Serial.read();
-    switch(c)
+    switch (c)
     {
     case '0'...'9':
       id *= 10;

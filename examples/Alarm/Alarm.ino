@@ -7,7 +7,7 @@
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device addresses
@@ -21,15 +21,15 @@ void setup(void)
 
   // Start up the library
   sensors.begin();
-  
+
   // locate devices on the bus
   Serial.print("Found ");
   Serial.print(sensors.getDeviceCount(), DEC);
   Serial.println(" devices.");
 
   // search for devices on the bus and assign based on an index.
-  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0"); 
-  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1"); 
+  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0");
+  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1");
 
   // show the addresses we found on the bus
   Serial.print("Device 0 Address: ");
@@ -39,7 +39,7 @@ void setup(void)
   Serial.print("Device 0 Alarms: ");
   printAlarms(insideThermometer);
   Serial.println();
-  
+
   Serial.print("Device 1 Address: ");
   printAddress(outsideThermometer);
   Serial.println();
@@ -47,25 +47,25 @@ void setup(void)
   Serial.print("Device 1 Alarms: ");
   printAlarms(outsideThermometer);
   Serial.println();
-  
+
   Serial.println("Setting alarm temps...");
 
   // alarm when temp is higher than 30C
   sensors.setHighAlarmTemp(insideThermometer, 30);
-  
+
   // alarm when temp is lower than -10C
   sensors.setLowAlarmTemp(insideThermometer, -10);
-  
+
   // alarm when temp is higher than 31C
   sensors.setHighAlarmTemp(outsideThermometer, 31);
-  
+
   // alarn when temp is lower than 27C
   sensors.setLowAlarmTemp(outsideThermometer, 27);
-  
+
   Serial.print("New Device 0 Alarms: ");
   printAlarms(insideThermometer);
   Serial.println();
-  
+
   Serial.print("New Device 1 Alarms: ");
   printAlarms(outsideThermometer);
   Serial.println();
@@ -127,8 +127,8 @@ void checkAlarm(DeviceAddress deviceAddress)
 }
 
 void loop(void)
-{ 
-  // call sensors.requestTemperatures() to issue a global temperature 
+{
+  // call sensors.requestTemperatures() to issue a global temperature
   // request to all devices on the bus
   Serial.print("Requesting temperatures...");
   sensors.requestTemperatures();
@@ -141,15 +141,15 @@ void loop(void)
 /*
   // Alternate method:
   // Search the bus and iterate through addresses of devices with alarms
-  
+
   // space for the alarm device's address
   DeviceAddress alarmAddr;
 
   Serial.println("Searching for alarms...");
-  
+
   // resetAlarmSearch() must be called before calling alarmSearch()
   sensors.resetAlarmSearch();
-  
+
   // alarmSearch() returns 0 when there are no devices with alarms
   while (sensors.alarmSearch(alarmAddr))
   {
@@ -159,4 +159,3 @@ void loop(void)
 */
 
 }
-

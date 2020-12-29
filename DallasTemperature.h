@@ -45,13 +45,12 @@ const class
 {
 public:
 	template <class T>
-	operator T *() const
-	{
+	operator T *() const {
 		return 0;
 	}
+
 	template <class C, class T>
-	operator T C::*() const
-	{
+	operator T C::*() const {
 		return 0;
 	}
 
@@ -71,7 +70,7 @@ public:
 
 	void setOneWire(OneWire*);
 
-    void setPullupPin(uint8_t);
+	void setPullupPin(uint8_t);
 
 	// initialise bus
 	void begin(void);
@@ -118,7 +117,7 @@ public:
 
 	// set resolution of a device to 9, 10, 11, or 12 bits
 	bool setResolution(const uint8_t*, uint8_t,
-			bool skipGlobalBitResolutionCalculation = false);
+	                   bool skipGlobalBitResolutionCalculation = false);
 
 	// sets/gets the waitForConversion flag
 	void setWaitForConversion(bool);
@@ -158,31 +157,31 @@ public:
 	// Is a conversion complete on the wire? Only applies to the first sensor on the wire.
 	bool isConversionComplete(void);
 
-  static uint16_t millisToWaitForConversion(uint8_t);
-  
-  uint16_t millisToWaitForConversion();
-  
-  // Sends command to one device to save values from scratchpad to EEPROM by index
-  // Returns true if no errors were encountered, false indicates failure
-  bool saveScratchPadByIndex(uint8_t);
-  
-  // Sends command to one or more devices to save values from scratchpad to EEPROM
-  // Returns true if no errors were encountered, false indicates failure
-  bool saveScratchPad(const uint8_t* = nullptr);
-  
-  // Sends command to one device to recall values from EEPROM to scratchpad by index
-  // Returns true if no errors were encountered, false indicates failure
-  bool recallScratchPadByIndex(uint8_t);
-  
-  // Sends command to one or more devices to recall values from EEPROM to scratchpad
-  // Returns true if no errors were encountered, false indicates failure
-  bool recallScratchPad(const uint8_t* = nullptr);
-  
-  // Sets the autoSaveScratchPad flag
-  void setAutoSaveScratchPad(bool);
-  
-  // Gets the autoSaveScratchPad flag
-  bool getAutoSaveScratchPad(void);
+	static uint16_t millisToWaitForConversion(uint8_t);
+
+	uint16_t millisToWaitForConversion();
+
+	// Sends command to one device to save values from scratchpad to EEPROM by index
+	// Returns true if no errors were encountered, false indicates failure
+	bool saveScratchPadByIndex(uint8_t);
+
+	// Sends command to one or more devices to save values from scratchpad to EEPROM
+	// Returns true if no errors were encountered, false indicates failure
+	bool saveScratchPad(const uint8_t* = nullptr);
+
+	// Sends command to one device to recall values from EEPROM to scratchpad by index
+	// Returns true if no errors were encountered, false indicates failure
+	bool recallScratchPadByIndex(uint8_t);
+
+	// Sends command to one or more devices to recall values from EEPROM to scratchpad
+	// Returns true if no errors were encountered, false indicates failure
+	bool recallScratchPad(const uint8_t* = nullptr);
+
+	// Sets the autoSaveScratchPad flag
+	void setAutoSaveScratchPad(bool);
+
+	// Gets the autoSaveScratchPad flag
+	bool getAutoSaveScratchPad(void);
 
 #if REQUIRESALARMS
 
@@ -246,7 +245,7 @@ public:
 	// convert from raw to Celsius
 	static float rawToCelsius(int16_t);
 
-    // convert from Celsius to raw
+	// convert from Celsius to raw
 	static int16_t celsiusToRaw(float);
 
 	// convert from raw to Fahrenheit
@@ -255,7 +254,7 @@ public:
 #if REQUIRESNEW
 
 	// initialize memory area
-	void* operator new (unsigned int);
+	void* operator new(unsigned int);
 
 	// delete memory reference
 	void operator delete(void*);
@@ -284,8 +283,8 @@ private:
 	// used to requestTemperature to dynamically check if a conversion is complete
 	bool checkForConversion;
 
-  // used to determine if values will be saved from scratchpad to EEPROM on every scratchpad write
-  bool autoSaveScratchPad;
+	// used to determine if values will be saved from scratchpad to EEPROM on every scratchpad write
+	bool autoSaveScratchPad;
 
 	// count of devices on the bus
 	uint8_t devices;
@@ -303,9 +302,9 @@ private:
 	// Returns true if all bytes of scratchPad are '\0'
 	bool isAllZeros(const uint8_t* const scratchPad, const size_t length = 9);
 
-    // External pullup control
-    void activateExternalPullup(void);
-    void deactivateExternalPullup(void);
+	// External pullup control
+	void activateExternalPullup(void);
+	void deactivateExternalPullup(void);
 
 #if REQUIRESALARMS
 

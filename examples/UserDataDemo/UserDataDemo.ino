@@ -56,7 +56,7 @@ void setup(void)
   Serial.println("Dallas Temperature Demo");
 
   sensors.begin();
-  
+
   // count devices
   deviceCount = sensors.getDeviceCount();
   Serial.print("#devices: ");

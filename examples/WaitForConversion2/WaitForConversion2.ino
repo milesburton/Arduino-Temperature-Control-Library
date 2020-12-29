@@ -1,6 +1,6 @@
 //
 // Sample of using Async reading of Dallas Temperature Sensors
-// 
+//
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -10,7 +10,7 @@
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 DeviceAddress tempDeviceAddress;
@@ -34,46 +34,46 @@ void setup(void)
   sensors.begin();
   sensors.getAddress(tempDeviceAddress, 0);
   sensors.setResolution(tempDeviceAddress, resolution);
-  
+
   sensors.setWaitForConversion(false);
   sensors.requestTemperatures();
-  delayInMillis = 750 / (1 << (12 - resolution)); 
-  lastTempRequest = millis(); 
-  
-  pinMode(13, OUTPUT); 
+  delayInMillis = 750 / (1 << (12 - resolution));
+  lastTempRequest = millis();
+
+  pinMode(13, OUTPUT);
 }
 
 void loop(void)
-{ 
-  
+{
+
   if (millis() - lastTempRequest >= delayInMillis) // waited long enough??
   {
     digitalWrite(13, LOW);
     Serial.print(" Temperature: ");
     temperature = sensors.getTempCByIndex(0);
-    Serial.println(temperature, resolution - 8); 
+    Serial.println(temperature, resolution - 8);
     Serial.print("  Resolution: ");
-    Serial.println(resolution); 
+    Serial.println(resolution);
     Serial.print("Idle counter: ");
-    Serial.println(idle);     
-    Serial.println(); 
-    
-    idle = 0; 
-        
-    // immediately after fetching the temperature we request a new sample 
-	// in the async modus
+    Serial.println(idle);
+    Serial.println();
+
+    idle = 0;
+
+    // immediately after fetching the temperature we request a new sample
+    // in the async modus
     // for the demo we let the resolution change to show differences
     resolution++;
     if (resolution > 12) resolution = 9;
-    
+
     sensors.setResolution(tempDeviceAddress, resolution);
-    sensors.requestTemperatures(); 
+    sensors.requestTemperatures();
     delayInMillis = 750 / (1 << (12 - resolution));
-    lastTempRequest = millis(); 
+    lastTempRequest = millis();
   }
-  
+
   digitalWrite(13, HIGH);
-  // we can do usefull things here 
+  // we can do usefull things here
   // for the demo we just count the idle time in millis
   delay(1);
   idle++;

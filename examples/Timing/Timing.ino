@@ -2,7 +2,7 @@
 //    FILE: Timing.ino
 //  AUTHOR: Rob Tillaart
 // VERSION: 0.0.3
-// PURPOSE: show performance of DallasTemperature lib 
+// PURPOSE: show performance of DallasTemperature lib
 //          compared to datasheet times per resolution
 //
 // HISTORY:

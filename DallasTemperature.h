@@ -131,6 +131,10 @@ public:
 	bool setResolution(const uint8_t*, uint8_t,
 	                   bool skipGlobalBitResolutionCalculation = false);
 
+	// Get the hardware assignable pin values (0 - 15)
+	uint8_t getAddressPins(const uint8_t* deviceAddress);
+	uint8_t getAddressPinsByIndex(uint8_t deviceIndex);
+
 	// sets/gets the waitForConversion flag
 	void setWaitForConversion(bool);
 	bool getWaitForConversion(void);

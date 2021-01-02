@@ -359,22 +359,41 @@ uint8_t DallasTemperature::getResolution(const uint8_t* deviceAddress) {
 		if (deviceAddress[DSROM_FAMILY] == DS1825MODEL && scratchPad[CONFIGURATION] & 0x80)
 			return 12;
 
-		switch (scratchPad[CONFIGURATION]) {
-		case TEMP_12_BIT:
+		switch (scratchPad[CONFIGURATION] & 0xF0) {
+		case TEMP_12_BIT & 0xF0:
 			return 12;
 
-		case TEMP_11_BIT:
+		case TEMP_11_BIT & 0xF0:
 			return 11;
 
-		case TEMP_10_BIT:
+		case TEMP_10_BIT & 0xF0:
 			return 10;
 
-		case TEMP_9_BIT:
+		case TEMP_9_BIT & 0xF0:
 			return 9;
 		}
 	}
 	return 0;
 
+}
+
+// Get values of the hardware assignable address pins.  Note not all devices
+// support this. Refer to the doucmentation for the device you purchased.
+// These often requre hardware modification to assign the address.
+uint8_t DallasTemperature::getAddressPins(const uint8_t* deviceAddress) {
+	ScratchPad scratchPad;
+	if (isConnected(deviceAddress, scratchPad)) {
+		return scratchPad[CONFIGURATION] & 0x0F;
+	}
+	return 0;
+}
+
+uint8_t DallasTemperature::getAddressPinsByIndex(uint8_t deviceIndex) {
+
+	DeviceAddress deviceAddress;
+	getAddress(deviceAddress, deviceIndex);
+
+	return getAddressPins(deviceAddress);
 }
 
 

@@ -73,8 +73,8 @@ unittest(test_error_code)
   assertEqual(-32512, DEVICE_FAULT_OPEN_RAW);
 
   assertEqual(-253, DEVICE_FAULT_SHORTGND_C);
-  assertEqualFloat(DEVICE_FAULT_SHORTGND_F, 0.001);
-  assertEqual(DEVICE_FAULT_SHORTGND_RAW);
+  assertEqualFloat(-423.399994, DEVICE_FAULT_SHORTGND_F, 0.001);
+  assertEqual(-32384, DEVICE_FAULT_SHORTGND_RAW);
 
   assertEqual(-252, DEVICE_FAULT_SHORTVDD_C);
   assertEqualFloat(-421.599976, DEVICE_FAULT_SHORTVDD_F, 0.001);

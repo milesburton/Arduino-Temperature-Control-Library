@@ -6,7 +6,7 @@ compile:
     - zero
     # - leonardo
     - m4
-    - esp32
+    # - esp32        # gives errors on OneWire library.
     - esp8266
     # - mega2560
 unittest:

@@ -37,42 +37,64 @@
 
 
 #include "Arduino.h"
-
-/*
-
-
-// BASED UPON SIMPLE
-// 
-
-
 #include "OneWire.h"
 #include "DallasTemperature.h"
-
-// Data wire is plugged into port 2 on the Arduino
-#define ONE_WIRE_BUS 2
-
-// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-OneWire oneWire(ONE_WIRE_BUS);
-
-// Pass our oneWire reference to Dallas Temperature. 
-DallasTemperature sensors(&oneWire);
-
 
 
 unittest_setup()
 {
+  fprintf(stderr, "VERSION: %s\n", DALLASTEMPLIBVERSION);
 }
 
 unittest_teardown()
 {
+  fprintf(stderr, "\n");
 }
 
 
-
-unittest(test_constructor)
+unittest(test_models)
 {
-  fprintf(stderr, "VERSION: %s\n", DALLASTEMPLIBVERSION);
-  
+  assertEqual(0x10, DS18S20MODEL);
+  assertEqual(0x28, DS18B20MODEL);
+  assertEqual(0x22, DS1822MODEL);
+  assertEqual(0x3B, DS1825MODEL);
+  assertEqual(0x42, DS28EA00MODEL);
+}
+
+
+unittest(test_error_code)
+{
+  assertEqual(-255,   DEVICE_DISCONNECTED_C);
+  assertEqual(-427,   DEVICE_DISCONNECTED_F);
+  assertEqual(-32640, DEVICE_DISCONNECTED_RAW);
+
+  assertEqual(-254, DEVICE_FAULT_OPEN_C);
+  assertEqualFloat(-425.199982, DEVICE_FAULT_OPEN_F, 0.001);
+  assertEqual(-32512, DEVICE_FAULT_OPEN_RAW);
+
+  assertEqual(-253, DEVICE_FAULT_SHORTGND_C);
+  assertEqualFloat(DEVICE_FAULT_SHORTGND_F, 0.001);
+  assertEqual(DEVICE_FAULT_SHORTGND_RAW);
+
+  assertEqual(-252, DEVICE_FAULT_SHORTVDD_C);
+  assertEqualFloat(-421.599976, DEVICE_FAULT_SHORTVDD_F, 0.001);
+  assertEqual( -32256, DEVICE_FAULT_SHORTVDD_RAW);
+}
+
+
+unittest(test_simple)
+{
+/*
+  // BASED UPON SIMPLE
+  // 
+  // Data wire is plugged into port 2 on the Arduino
+  #define ONE_WIRE_BUS 2
+
+  // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+  OneWire oneWire(ONE_WIRE_BUS);
+
+  // Pass our oneWire reference to Dallas Temperature. 
+  DallasTemperature sensors(&oneWire);
   sensors.begin();
   sensors.requestTemperatures();
   float tempC = sensors.getTempCByIndex(0);
@@ -85,10 +107,10 @@ unittest(test_constructor)
   {
     fprintf(stderr, "Error: Could not read temperature data\n");
   }
+*/
 
   assertEqual(1, 1);  // keep unit test happy
 }
-*/
 
 unittest_main()
 

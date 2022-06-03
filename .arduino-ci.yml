@@ -2,13 +2,13 @@ compile:
   # Choosing to run compilation tests on 2 different Arduino platforms
   platforms:
     - uno
-    # - due
+    - due
     - zero
-    # - leonardo
+    - leonardo
     - m4
-    # - esp32        # gives errors on OneWire library.
-    - esp8266
-    # - mega2560
+    # - esp32        # errors on OneWire =>  util/crc16.h  vs  rom/crc.h
+    # - esp8266
+    - mega2560
 unittest:
   # These dependent libraries will be installed
   libraries:

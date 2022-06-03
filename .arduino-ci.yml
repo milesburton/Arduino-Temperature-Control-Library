@@ -3,12 +3,12 @@ compile:
   platforms:
     - uno
     - due
-    - zero
-    - leonardo
+    # - zero         # SAMD covered by M4
+    # - leonardo     # AVR covered by UNO
     - m4
     # - esp32        # errors on OneWire =>  util/crc16.h  vs  rom/crc.h
     - esp8266
-    - mega2560
+    # - mega2560     # AVR covered by UNO
 unittest:
   # These dependent libraries will be installed
   libraries:

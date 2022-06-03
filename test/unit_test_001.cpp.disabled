@@ -40,6 +40,12 @@
 #include "OneWire.h"
 #include "DallasTemperature.h"
 
+/*
+NOTE 2022-06-03: why is unit test disabled.
+There are problems with the including of util/crc16.h by Onewire.h
+Without it test can't be run.
+*/
+
 
 unittest_setup()
 {
@@ -85,7 +91,7 @@ unittest(test_error_code)
 unittest(test_simple)
 {
 /*
-  // BASED UPON SIMPLE
+  // BASED UPON SIMPLE (won't run, see above)
   // 
   // Data wire is plugged into port 2 on the Arduino
   #define ONE_WIRE_BUS 2

@@ -23,23 +23,23 @@ DallasTemperature sensor_outhouse(&oneWire_out);
 
 void setup(void)
 {
-    Serial.begin(9600);
-    Serial.println("Dallas Temperature Control Library Demo - TwoPin_DS18B20");
+  Serial.begin(9600);
+  Serial.println("Dallas Temperature Control Library Demo - TwoPin_DS18B20");
 
-    sensor_inhouse.begin();
-    sensor_outhouse.begin();
+  sensor_inhouse.begin();
+  sensor_outhouse.begin();
 }
 
 void loop(void)
 {
-    Serial.print("Requesting temperatures...");
-    sensor_inhouse.requestTemperatures();
-    sensor_outhouse.requestTemperatures();
-    Serial.println(" done");
+  Serial.print("Requesting temperatures...");
+  sensor_inhouse.requestTemperatures();
+  sensor_outhouse.requestTemperatures();
+  Serial.println(" done");
 
-    Serial.print("Inhouse: ");
-    Serial.println(sensor_inhouse.getTempCByIndex(0));
+  Serial.print("Inhouse: ");
+  Serial.println(sensor_inhouse.getTempCByIndex(0));
 
-    Serial.print("Outhouse: ");
-    Serial.println(sensor_outhouse.getTempCByIndex(0));
+  Serial.print("Outhouse: ");
+  Serial.println(sensor_outhouse.getTempCByIndex(0));
 }

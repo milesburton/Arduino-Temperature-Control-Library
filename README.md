@@ -10,6 +10,7 @@ This library supports the following devices :
 * DS1822
 * DS1820
 * MAX31820
+* MAX31850
 
 
 You will need a pull-up resistor of about 5 KOhm between the 1-Wire data line

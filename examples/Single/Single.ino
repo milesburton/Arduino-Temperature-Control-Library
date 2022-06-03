@@ -8,7 +8,7 @@
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device address
@@ -31,10 +31,10 @@ void setup(void)
   Serial.println(" devices.");
 
   // report parasite power requirements
-  Serial.print("Parasite power is: "); 
+  Serial.print("Parasite power is: ");
   if (sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
-  
+
   // Assign address manually. The addresses below will beed to be changed
   // to valid device addresses on your bus. Device address can be retrieved
   // by using either oneWire.search(deviceAddress) or individually via
@@ -44,16 +44,16 @@ void setup(void)
 
   // Method 1:
   // Search for devices on the bus and assign based on an index. Ideally,
-  // you would do this to initially discover addresses on the bus and then 
-  // use those addresses and manually assign them (see above) once you know 
+  // you would do this to initially discover addresses on the bus and then
+  // use those addresses and manually assign them (see above) once you know
   // the devices on your bus (and assuming they don't change).
-  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0"); 
-  
+  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0");
+
   // method 2: search()
   // search() looks for the next device. Returns 1 if a new address has been
-  // returned. A zero might mean that the bus is shorted, there are no devices, 
-  // or you have already retrieved all of them. It might be a good idea to 
-  // check the CRC to make sure you didn't get garbage. The order is 
+  // returned. A zero might mean that the bus is shorted, there are no devices,
+  // or you have already retrieved all of them. It might be a good idea to
+  // check the CRC to make sure you didn't get garbage. The order is
   // deterministic. You will always get the same devices in the same order
   //
   // Must be called before search()
@@ -68,9 +68,9 @@ void setup(void)
 
   // set the resolution to 9 bit (Each Dallas/Maxim device is capable of several different resolutions)
   sensors.setResolution(insideThermometer, 9);
- 
+
   Serial.print("Device 0 Resolution: ");
-  Serial.print(sensors.getResolution(insideThermometer), DEC); 
+  Serial.print(sensors.getResolution(insideThermometer), DEC);
   Serial.println();
 }
 
@@ -85,7 +85,7 @@ void printTemperature(DeviceAddress deviceAddress)
 
   // method 2 - faster
   float tempC = sensors.getTempC(deviceAddress);
-  if(tempC == DEVICE_DISCONNECTED_C) 
+  if (tempC == DEVICE_DISCONNECTED_C)
   {
     Serial.println("Error: Could not read temperature data");
     return;
@@ -99,13 +99,13 @@ void printTemperature(DeviceAddress deviceAddress)
  * Main function. It will request the tempC from the sensors and display on Serial.
  */
 void loop(void)
-{ 
-  // call sensors.requestTemperatures() to issue a global temperature 
+{
+  // call sensors.requestTemperatures() to issue a global temperature
   // request to all devices on the bus
   Serial.print("Requesting temperatures...");
   sensors.requestTemperatures(); // Send the command to get temperatures
   Serial.println("DONE");
-  
+
   // It responds almost immediately. Let's print out the data
   printTemperature(insideThermometer); // Use a simple function to print out the data
 }

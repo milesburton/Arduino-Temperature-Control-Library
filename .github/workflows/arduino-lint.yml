@@ -1,3 +1,6 @@
+
+name: Arduino-lint
+
 on: [push, pull_request]
 jobs:
   lint:
@@ -7,4 +10,4 @@ jobs:
       - uses: arduino/arduino-lint-action@v1
         with:
           library-manager: update
-          compliance: strict
+          # compliance: strict

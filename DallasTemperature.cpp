@@ -261,9 +261,11 @@ void DallasTemperature::setResolution(uint8_t newResolution) {
 
 	bitResolution = constrain(newResolution, 9, 12);
 	DeviceAddress deviceAddress;
+	_wire->reset_search();
 	for (uint8_t i = 0; i < devices; i++) {
-		getAddress(deviceAddress, i);
-		setResolution(deviceAddress, bitResolution, true);
+		if(_wire->search(deviceAddress) && validAddress(deviceAddress)) {
+			setResolution(deviceAddress, bitResolution, true);
+		}
 	}
 }
 
@@ -325,12 +327,14 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 	if (skipGlobalBitResolutionCalculation == false) {
 		bitResolution = newResolution;
 		if (devices > 1) {
+			DeviceAddress deviceAddr;
+			_wire->reset_search();
 			for (uint8_t i = 0; i < devices; i++) {
 				if (bitResolution == 12) break;
-				DeviceAddress deviceAddr;
-				getAddress(deviceAddr, i);
-				uint8_t b = getResolution(deviceAddr);
-				if (b > bitResolution) bitResolution = b;
+				if (_wire->search(deviceAddr) && validAddress(deviceAddr)) {
+					uint8_t b = getResolution(deviceAddr);
+					if (b > bitResolution) bitResolution = b;
+				}
 			}
 		}
 	}

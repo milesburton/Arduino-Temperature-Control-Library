@@ -414,49 +414,53 @@ bool DallasTemperature::isConversionComplete() {
 }
 
 // sends command for all devices on the bus to perform a temperature conversion
-void DallasTemperature::requestTemperatures() {
+DallasTemperature::request_t DallasTemperature::requestTemperatures() {
+	DallasTemperature::request_t req = {};
+	req.result = true;
 
 	_wire->reset();
 	_wire->skip();
 	_wire->write(STARTCONVO, parasite);
 
 	// ASYNC mode?
+	req.timestamp = millis();
 	if (!waitForConversion)
-		return;
-	blockTillConversionComplete(bitResolution);
-
+		return req;
+	blockTillConversionComplete(bitResolution, req.timestamp);
+	return req;
 }
 
 // sends command for one device to perform a temperature by address
 // returns FALSE if device is disconnected
 // returns TRUE  otherwise
-bool DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
-
+DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
+	DallasTemperature::request_t req = {};
 	uint8_t bitResolution = getResolution(deviceAddress);
 	if (bitResolution == 0) {
-		return false; //Device disconnected
+		req.result = false;
+		return req; //Device disconnected
 	}
 
 	_wire->reset();
 	_wire->select(deviceAddress);
 	_wire->write(STARTCONVO, parasite);
 
+	req.timestamp = millis();
 	// ASYNC mode?
+	req.result = true;
 	if (!waitForConversion)
-		return true;
+		return req;
 
-	blockTillConversionComplete(bitResolution);
+	blockTillConversionComplete(bitResolution, req.timestamp);
 
-	return true;
+	return req;
 
 }
 
 // Continue to check if the IC has responded with a temperature
-void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
-
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, unsigned long start) {
 	if (checkForConversion && !parasite) {
-		unsigned long start = millis();
-		while (!isConversionComplete() && (millis() - start < MAX_CONVERSION_TIMEOUT ))
+		while (!isConversionComplete() && (millis() - start <  MAX_CONVERSION_TIMEOUT))
 			yield();
 	} else {
 		unsigned long delms = millisToWaitForConversion(bitResolution);
@@ -465,6 +469,18 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 		deactivateExternalPullup();
 	}
 
+}
+
+// Continue to check if the IC has responded with a temperature
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
+	unsigned long start = millis();
+	blockTillConversionComplete(bitResolution, start);
+}
+
+// Continue to check if the IC has responded with a temperature
+void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, DallasTemperature::request_t req) {
+	if (req.result)
+		blockTillConversionComplete(bitResolution, req.timestamp);
 }
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
@@ -587,7 +603,7 @@ void DallasTemperature::deactivateExternalPullup() {
 }
 
 // sends command for one device to perform a temp conversion by index
-bool DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex) {
+DallasTemperature::request_t DallasTemperature::requestTemperaturesByIndex(uint8_t deviceIndex) {
 
 	DeviceAddress deviceAddress;
 	getAddress(deviceAddress, deviceIndex);

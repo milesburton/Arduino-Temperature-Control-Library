@@ -33,9 +33,10 @@
 #define DS28EA00MODEL 0x42
 
 // Error Codes
-#define DEVICE_DISCONNECTED_C -255
-#define DEVICE_DISCONNECTED_F -427
-#define DEVICE_DISCONNECTED_RAW -32640
+// See https://github.com/milesburton/Arduino-Temperature-Control-Library/commit/ac1eb7f56e3894e855edc3353be4bde4aa838d41#commitcomment-75490966 for the 16bit implementation. Reverted due to microcontroller resource constraints.
+#define DEVICE_DISCONNECTED_C -127
+#define DEVICE_DISCONNECTED_F -196.6
+#define DEVICE_DISCONNECTED_RAW -7040
 
 #define DEVICE_FAULT_OPEN_C -254
 #define DEVICE_FAULT_OPEN_F -425.199982

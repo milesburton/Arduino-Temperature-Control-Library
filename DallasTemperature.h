@@ -139,14 +139,23 @@ public:
 	void setCheckForConversion(bool);
 	bool getCheckForConversion(void);
 
+	struct request_t {
+		bool result;
+		unsigned long timestamp;
+
+		operator bool() {
+			return result;
+		}
+	};
+
 	// sends command for all devices on the bus to perform a temperature conversion
-	void requestTemperatures(void);
+	request_t requestTemperatures(void);
 
 	// sends command for one device to perform a temperature conversion by address
-	bool requestTemperaturesByAddress(const uint8_t*);
+	request_t requestTemperaturesByAddress(const uint8_t*);
 
 	// sends command for one device to perform a temperature conversion by index
-	bool requestTemperaturesByIndex(uint8_t);
+	request_t requestTemperaturesByIndex(uint8_t);
 
 	// returns temperature raw value (12 bit integer of 1/128 degrees C)
 	int32_t getTemp(const uint8_t*);
@@ -274,6 +283,8 @@ public:
 #endif
 
 	void blockTillConversionComplete(uint8_t);
+	void blockTillConversionComplete(uint8_t, unsigned long);
+	void blockTillConversionComplete(uint8_t, request_t);
 
 private:
 	typedef uint8_t ScratchPad[9];

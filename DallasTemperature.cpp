@@ -710,9 +710,9 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 	 */
 
 	if ((deviceAddress[DSROM_FAMILY] == DS18S20MODEL) && (scratchPad[COUNT_PER_C] != 0)) {
-		fpTemperature = ((fpTemperature & 0xfff0) << 3) - 32
+		fpTemperature = (((fpTemperature & 0xfff0) << 3) - 32
 		                + (((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7)
-		                   / scratchPad[COUNT_PER_C]);
+		                   / scratchPad[COUNT_PER_C])) | neg;
 	}
 
 	return fpTemperature;

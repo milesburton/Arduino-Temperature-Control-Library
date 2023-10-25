@@ -299,7 +299,7 @@ private:
 
 	// used to determine the delay amount needed to allow for the
 	// temperature conversion to take place
-	uint8_t bitResolution;
+	uint8_t globalBitResolution;
 
 	// used to requestTemperature with or without delay
 	bool waitForConversion;

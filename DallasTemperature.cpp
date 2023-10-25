@@ -101,7 +101,7 @@ void DallasTemperature::setOneWire(OneWire* _oneWire) {
 	devices = 0;
 	ds18Count = 0;
 	parasite = false;
-	bitResolution = 9;
+	globalBitResolution = 9;
 	waitForConversion = true;
 	checkForConversion = true;
 	autoSaveScratchPad = true;
@@ -129,7 +129,7 @@ void DallasTemperature::begin(void) {
 					parasite = true;
 
 				uint8_t b = getResolution(deviceAddress);
-				if (b > bitResolution) bitResolution = b;
+				if (b > globalBitResolution) globalBitResolution = b;
 			}
 		}
 	}
@@ -259,12 +259,12 @@ bool DallasTemperature::readPowerSupply(const uint8_t* deviceAddress)
 // if new resolution is out of range, it is constrained.
 void DallasTemperature::setResolution(uint8_t newResolution) {
 
-	bitResolution = constrain(newResolution, 9, 12);
+	globalBitResolution = constrain(newResolution, 9, 12);
 	DeviceAddress deviceAddress;
 	_wire->reset_search();
 	for (uint8_t i = 0; i < devices; i++) {
 		if(_wire->search(deviceAddress) && validAddress(deviceAddress)) {
-			setResolution(deviceAddress, bitResolution, true);
+			setResolution(deviceAddress, globalBitResolution, true);
 		}
 	}
 }
@@ -325,15 +325,15 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 
 	// do we need to update the max resolution used?
 	if (skipGlobalBitResolutionCalculation == false) {
-		bitResolution = newResolution;
+		globalBitResolution = newResolution;
 		if (devices > 1) {
 			DeviceAddress deviceAddr;
 			_wire->reset_search();
 			for (uint8_t i = 0; i < devices; i++) {
-				if (bitResolution == 12) break;
+				if (globalBitResolution == 12) break;
 				if (_wire->search(deviceAddr) && validAddress(deviceAddr)) {
 					uint8_t b = getResolution(deviceAddr);
-					if (b > bitResolution) bitResolution = b;
+					if (b > globalBitResolution) globalBitResolution = b;
 				}
 			}
 		}
@@ -345,7 +345,7 @@ bool DallasTemperature::setResolution(const uint8_t* deviceAddress,
 
 // returns the global resolution
 uint8_t DallasTemperature::getResolution() {
-	return bitResolution;
+	return globalBitResolution;
 }
 
 // returns the current resolution of the device, 9-12
@@ -426,7 +426,7 @@ DallasTemperature::request_t DallasTemperature::requestTemperatures() {
 	req.timestamp = millis();
 	if (!waitForConversion)
 		return req;
-	blockTillConversionComplete(bitResolution, req.timestamp);
+	blockTillConversionComplete(globalBitResolution, req.timestamp);
 	return req;
 }
 
@@ -435,8 +435,8 @@ DallasTemperature::request_t DallasTemperature::requestTemperatures() {
 // returns TRUE  otherwise
 DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
 	DallasTemperature::request_t req = {};
-	uint8_t bitResolution = getResolution(deviceAddress);
-	if (bitResolution == 0) {
+	uint8_t deviceBitResolution = getResolution(deviceAddress);
+	if (deviceBitResolution == 0) {
 		req.result = false;
 		return req; //Device disconnected
 	}
@@ -451,7 +451,7 @@ DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(con
 	if (!waitForConversion)
 		return req;
 
-	blockTillConversionComplete(bitResolution, req.timestamp);
+	blockTillConversionComplete(deviceBitResolution, req.timestamp);
 
 	return req;
 
@@ -501,7 +501,7 @@ uint16_t DallasTemperature::millisToWaitForConversion(uint8_t bitResolution) {
 
 // returns number of milliseconds to wait till conversion is complete (based on IC datasheet)
 uint16_t DallasTemperature::millisToWaitForConversion() {
-	return millisToWaitForConversion(bitResolution);
+	return millisToWaitForConversion(globalBitResolution);
 }
 
 // Sends command to one device to save values from scratchpad to EEPROM by index

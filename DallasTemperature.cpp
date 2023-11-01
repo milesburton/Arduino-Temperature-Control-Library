@@ -613,33 +613,40 @@ DallasTemperature::request_t DallasTemperature::requestTemperaturesByIndex(uint8
 }
 
 // Fetch temperature for device index
-float DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
-
+DallasTemperature::celsius_result_t DallasTemperature::getTempCByIndex(uint8_t deviceIndex) {
+	DallasTemperature::celsius_result_t c = {};
 	DeviceAddress deviceAddress;
+
 	if (!getAddress(deviceAddress, deviceIndex)) {
-		return DEVICE_DISCONNECTED_C;
+		c.value.celsius = DEVICE_DISCONNECTED_C;
+		c.error_code = DallasTemperature::device_error_code::device_fault_disconnected;
+		return c;
 	}
-	return getTempC((uint8_t*) deviceAddress);
+
+	return c = getTempC((uint8_t*)deviceAddress);
 }
 
 // Fetch temperature for device index
-float DallasTemperature::getTempFByIndex(uint8_t deviceIndex) {
-
+DallasTemperature::fahrenheit_result_t DallasTemperature::getTempFByIndex(uint8_t deviceIndex) {
+	DallasTemperature::fahrenheit_result_t f = {};
 	DeviceAddress deviceAddress;
 
 	if (!getAddress(deviceAddress, deviceIndex)) {
-		return DEVICE_DISCONNECTED_F;
+		f.value.fahrenheit = DEVICE_DISCONNECTED_F;
+		f.error_code = DallasTemperature::device_error_code::device_fault_disconnected;
+		return f;
 	}
 
-	return getTempF((uint8_t*) deviceAddress);
-
+	return f = getTempF((uint8_t*) deviceAddress);
 }
 
 // reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
-int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
+DallasTemperature::raw_result_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
                                                 uint8_t* scratchPad) {
-
-	int32_t fpTemperature = 0;
+	DallasTemperature::raw_result_t r = {};
+	r.reading.raw = 0;
+	r.error_code = DallasTemperature::device_error_code::device_ok;
+	int32_t &fpTemperature = r.reading.raw;
 
 	// looking thru the spec sheets of all supported devices, bit 15 is always the signing bit
 	// Detected if signed
@@ -657,22 +664,22 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 	if (deviceAddress[DSROM_FAMILY] == DS1825MODEL && scratchPad[CONFIGURATION] & 0x80 ) {
 		//Serial.print("  Detected MAX31850");
 		if (scratchPad[TEMP_LSB] & 1) { // Fault Detected
-			if (scratchPad[HIGH_ALARM_TEMP] & 1) {
-				//Serial.println("open detected");
-				return DEVICE_FAULT_OPEN_RAW;
-			}
-			else if (scratchPad[HIGH_ALARM_TEMP] >> 1 & 1) {
-				//Serial.println("short to ground detected");
-				return DEVICE_FAULT_SHORTGND_RAW;
+			// backwards compatability magic number for default error
+			r.reading.raw = DEVICE_DISCONNECTED_RAW; // We don't know why there's a fault, exit with disconnect value
+			r.error_code = (scratchPad[HIGH_ALARM_TEMP] & 0x7) | DallasTemperature::device_error_code::device_fault_general;
+
+			// for backwards compatability, new api could ignore this and send the raw data
+			if (scratchPad[HIGH_ALARM_TEMP] & DallasTemperature::device_error_code::device_fault_open) {
+				r.reading.raw = DEVICE_FAULT_OPEN_RAW;
 			}
 			else if (scratchPad[HIGH_ALARM_TEMP] >> 2 & 1) {
-				//Serial.println("short to Vdd detected");
-				return DEVICE_FAULT_SHORTVDD_RAW;
+				r.reading.raw = DEVICE_FAULT_SHORTGND_RAW;
 			}
-			else {
-				// We don't know why there's a fault, exit with disconnect value
-				return DEVICE_DISCONNECTED_RAW;
+			else if (scratchPad[HIGH_ALARM_TEMP] >> 2 & 1) {
+				r.reading.raw = DEVICE_FAULT_SHORTVDD_RAW;
 			}
+
+			return r;
 		}
 		// We must mask out bit 1 (reserved) and 0 (fault) on TEMP_LSB
 		fpTemperature = (((int32_t) scratchPad[TEMP_MSB]) << 11)
@@ -715,7 +722,7 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 		                   / scratchPad[COUNT_PER_C])) | neg;
 	}
 
-	return fpTemperature;
+	return r;
 }
 
 // returns temperature in 1/128 degrees C or DEVICE_DISCONNECTED_RAW if the
@@ -723,13 +730,15 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
-
+DallasTemperature::raw_result_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
+	DallasTemperature::raw_result_t r = {};
 	ScratchPad scratchPad;
 	if (isConnected(deviceAddress, scratchPad))
-		return calculateTemperature(deviceAddress, scratchPad);
-	return DEVICE_DISCONNECTED_RAW;
-
+		return r = calculateTemperature(deviceAddress, scratchPad);
+	
+	r.reading.raw = DEVICE_DISCONNECTED_RAW;
+	r.error_code = DallasTemperature::device_error_code::device_fault_disconnected;
+	return r;
 }
 
 // returns temperature in degrees C or DEVICE_DISCONNECTED_C if the
@@ -737,8 +746,11 @@ int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
 // the numeric value of DEVICE_DISCONNECTED_C is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-float DallasTemperature::getTempC(const uint8_t* deviceAddress) {
-	return rawToCelsius(getTemp(deviceAddress));
+DallasTemperature::celsius_result_t DallasTemperature::getTempC(const uint8_t* deviceAddress) {
+	DallasTemperature::celsius_result_t c = {};
+	DallasTemperature::raw_result_t r = getTemp(deviceAddress);
+	c.from_raw_result(r);
+	return c;
 }
 
 // returns temperature in degrees F or DEVICE_DISCONNECTED_F if the
@@ -746,8 +758,11 @@ float DallasTemperature::getTempC(const uint8_t* deviceAddress) {
 // the numeric value of DEVICE_DISCONNECTED_F is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-float DallasTemperature::getTempF(const uint8_t* deviceAddress) {
-	return rawToFahrenheit(getTemp(deviceAddress));
+DallasTemperature::fahrenheit_result_t DallasTemperature::getTempF(const uint8_t* deviceAddress) {
+	DallasTemperature::fahrenheit_result_t f = {};
+	DallasTemperature::raw_result_t r = getTemp(deviceAddress);
+	f.from_raw_result(r);
+	return f;
 }
 
 // returns true if the bus requires parasite power

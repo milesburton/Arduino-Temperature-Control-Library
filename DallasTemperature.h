@@ -140,6 +140,21 @@ public:
 	void setCheckForConversion(bool);
 	bool getCheckForConversion(void);
 
+	// convert from Celsius to Fahrenheit
+	static float toFahrenheit(float);
+
+	// convert from Fahrenheit to Celsius
+	static float toCelsius(float);
+
+	// convert from raw to Celsius
+	static float rawToCelsius(int32_t);
+
+	// convert from Celsius to raw
+	static int16_t celsiusToRaw(float);
+
+	// convert from raw to Fahrenheit
+	static float rawToFahrenheit(int32_t);
+
 	struct request_t {
 		bool result;
 		unsigned long timestamp;
@@ -147,6 +162,192 @@ public:
 		operator bool() {
 			return result;
 		}
+	};
+
+	enum device_error_code {
+		device_ok                 = 0,
+		device_connected          = 0,
+		device_fault_open         = 1,
+		device_fault_shortgnd     = 2,
+		device_fault_shortvdd     = 4,
+		device_fault_general      = 8,
+		device_fault_disconnected = 16
+	};
+
+	// Treat temperatures as their own distinct types
+	struct celsius_unit_t;
+	struct fahrenheit_unit_t;
+	struct kelvin_unit_t;
+
+	// NOTE: conversions back to raw units?
+	struct raw_unit_t {
+		int32_t raw;
+
+		raw_unit_t() = default;
+
+		celsius_unit_t in_celsius() {
+			celsius_unit_t c;
+			c.celsius = rawToCelsius(raw);
+			return c;
+		};
+
+		kelvin_unit_t in_kelvin() {
+			kelvin_unit_t k;
+			k.kelvin = rawToCelsius(raw) + 273.15f;
+			return k;
+		};
+
+		fahrenheit_unit_t in_fahrenheit() {
+			fahrenheit_unit_t f;
+			f.fahrenheit = rawToFahrenheit(raw);
+			return f;
+		};
+	};
+
+	struct celsius_unit_t {
+		float celsius;
+		
+		celsius_unit_t() = default;
+
+		celsius_unit_t(raw_unit_t r) {
+			celsius = rawToCelsius(r.raw);
+		}
+
+		void from_raw(raw_unit_t r) {
+			celsius = rawToCelsius(r.raw);
+		}
+
+		celsius_unit_t in_celsius() {
+			return *this;
+		};
+
+		kelvin_unit_t in_kelvin() {
+			kelvin_unit_t k;
+			k.kelvin = celsius + 273.15f;
+			return k;
+		};
+
+		fahrenheit_unit_t in_fahrenheit() {
+			fahrenheit_unit_t f;
+			f.fahrenheit = toFahrenheit(celsius);
+			return f;
+		};
+	};
+
+	struct fahrenheit_unit_t {
+		float fahrenheit;
+
+		fahrenheit_unit_t() = default;
+
+		fahrenheit_unit_t(raw_unit_t r) {
+			fahrenheit = rawToFahrenheit(r.raw);
+		}
+
+		void from_raw(raw_unit_t r) {
+			fahrenheit = rawToFahrenheit(r.raw);
+		}
+
+		celsius_unit_t in_celsius() {
+			celsius_unit_t c;
+			c.celsius = toCelsius(fahrenheit);
+			return c;
+		};
+
+		kelvin_unit_t in_kelvin() {
+			kelvin_unit_t k;
+			k.kelvin = toCelsius(fahrenheit) + 273.15f;
+			return k;
+		};
+
+		fahrenheit_unit_t in_fahrenheit() {
+			return *this;
+		};
+	};
+
+	struct kelvin_unit_t {
+		float kelvin;
+
+		kelvin_unit_t() = default;
+
+		kelvin_unit_t(raw_unit_t r) {
+			kelvin = rawToCelsius(r.raw) + 273.15f;
+		}
+
+		void from_raw(raw_unit_t r) {
+			kelvin = rawToCelsius(r.raw) + 273.15f;
+		}
+
+		celsius_unit_t in_celsius() {
+			celsius_unit_t c;
+			c.celsius = kelvin - 273.15f;
+			return c;
+		};
+
+		kelvin_unit_t in_kelvin() {
+			return *this;
+		};
+
+		fahrenheit_unit_t in_fahrenheit() {
+			fahrenheit_unit_t f;
+			f.fahrenheit = toFahrenheit(kelvin - 273.15f);
+			return f;
+		};
+	};
+
+	struct raw_result_t {
+		raw_unit_t reading;
+		uint32_t error_code;
+
+		raw_result_t() = default;
+
+		// NOTE: implicit conversion here is for backwards compatability
+		operator int32_t() {
+			return reading.raw;
+		}
+	};
+
+	struct celsius_result_t {
+		celsius_unit_t value;
+		uint32_t error_code = DallasTemperature::device_error_code::device_ok;
+
+		void from_raw_result(raw_result_t r) {
+			value.celsius = rawToCelsius(r.reading.raw);
+			error_code = r.error_code;
+		}
+
+		// NOTE: implicit conversion here is for backwards compatability
+		operator float() {
+			return value.celsius;
+		};
+	};
+
+	struct fahrenheit_result_t {
+		fahrenheit_unit_t value;
+		uint32_t error_code = DallasTemperature::device_error_code::device_ok;
+
+		void from_raw_result(raw_result_t r) {
+			value.fahrenheit = rawToFahrenheit(r.reading.raw);
+			error_code = r.error_code;
+		}
+
+		// NOTE: implicit conversion here is for backwards compatability
+		operator float() {
+			return value.fahrenheit;
+		};
+	};
+
+	struct kelvin_result_t {
+		kelvin_unit_t value;
+		uint32_t error_code = DallasTemperature::device_error_code::device_ok;
+
+		void from_raw_result(raw_result_t r) {
+			value.kelvin = rawToCelsius(r.reading.raw) + 273.15f;
+			error_code = r.error_code; 
+		}
+
+		// NOTE: not including implicit conversion for kelvin simply because currently
+		// there are no functions that returns temperatures in kelvin no need to be
+		// backwards compatible here
 	};
 
 	// sends command for all devices on the bus to perform a temperature conversion
@@ -159,19 +360,19 @@ public:
 	request_t requestTemperaturesByIndex(uint8_t);
 
 	// returns temperature raw value (12 bit integer of 1/128 degrees C)
-	int32_t getTemp(const uint8_t*);
+	raw_result_t getTemp(const uint8_t*);
 
 	// returns temperature in degrees C
-	float getTempC(const uint8_t*);
+	celsius_result_t getTempC(const uint8_t*);
 
 	// returns temperature in degrees F
-	float getTempF(const uint8_t*);
+	fahrenheit_result_t getTempF(const uint8_t*);
 
 	// Get temperature for device index (slow)
-	float getTempCByIndex(uint8_t);
+	celsius_result_t getTempCByIndex(uint8_t);
 
 	// Get temperature for device index (slow)
-	float getTempFByIndex(uint8_t);
+	fahrenheit_result_t getTempFByIndex(uint8_t);
 
 	// returns true if the bus requires parasite power
 	bool isParasitePowerMode(void);
@@ -258,21 +459,6 @@ public:
 	int16_t getUserData(const uint8_t*);
 	int16_t getUserDataByIndex(uint8_t);
 
-	// convert from Celsius to Fahrenheit
-	static float toFahrenheit(float);
-
-	// convert from Fahrenheit to Celsius
-	static float toCelsius(float);
-
-	// convert from raw to Celsius
-	static float rawToCelsius(int32_t);
-
-	// convert from Celsius to raw
-	static int16_t celsiusToRaw(float);
-
-	// convert from raw to Fahrenheit
-	static float rawToFahrenheit(int32_t);
-
 #if REQUIRESNEW
 
 	// initialize memory area
@@ -320,7 +506,7 @@ private:
 	OneWire* _wire;
 
 	// reads scratchpad and returns the raw temperature
-	int32_t calculateTemperature(const uint8_t*, uint8_t*);
+	raw_result_t calculateTemperature(const uint8_t*, uint8_t*);
 
 
 	// Returns true if all bytes of scratchPad are '\0'

@@ -319,7 +319,7 @@ public:
 		operator float() {
 			return value.celsius;
 		};
-	};
+	}my_Celsius_result_t;
 
 	struct fahrenheit_result_t {
 		fahrenheit_unit_t value;

@@ -141,6 +141,19 @@ void printTemperature(DeviceAddress deviceAddress)
 
   // method 2 - faster
   float tempC = sensors.getTempC(deviceAddress);
+
+  // method 3 - returning a structure 
+//  struct sensors.celsius_result_t tempC = sensors.getTempC(deviceAddress);
+//  struct sensors.celsius_result_t tempC;
+//  sensors.my_Celsius_result_t.celsius_unit_t tempC ={};
+//  sensors.my_Celsius_result_t tempC ={};
+//  sensors.celsius_result_t tempC = sensors.getTempC(deviceAddress);
+//  sensors.my_Celsius_result_t tempC;
+//  sensors.my_Celsius_result_t = sensors.getTempC(deviceAddress);
+//  celsius_unit_t tempC = sensors.my_Celsius_result_t.value;
+  
+//error_code
+  
   if (tempC == DEVICE_DISCONNECTED_C)
   {
     Serial.println("Error: Could not read temperature data");

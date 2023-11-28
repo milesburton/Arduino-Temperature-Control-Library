@@ -139,7 +139,7 @@ void printTemperature(DeviceAddress deviceAddress)
   if (tempC == DEVICE_DISCONNECTED_C)
   {
     Serial.print("Error:_Could_not_read_temperature_data_#:");
-//    Serial.println(int(deviceAddress));
+    //    Serial.println(int(deviceAddress));
     return;
   }
   //  Serial.print("Temp C: ");
@@ -167,3 +167,37 @@ void loop(void)
   Serial.println(); //end of line
   digitalWrite(LED_BUILTIN, LOW);   //Signal end of print temp.
 }//end loop()
+
+// function to Check for Error, Return Error type or print temp
+void isError_AndPrintTemperature(DeviceAddress deviceAddress)
+{
+  // From Andersama
+  bool address_ok = sensors.getAddress(deviceAddress, 0);
+  if (!address_ok) {
+    Serial.println("!address_ok");
+    return;
+  }
+  DallasTemperature::request_t request = sensors.requestTemperatures();
+  DallasTemperature::celsius_result_t temp_reading = sensors.getTempC(deviceAddress);
+  // consider utility functions for testing for specific error flags / codes
+  if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_open) {
+    //display error for device_fault_ope
+    Serial.println("device_fault_open");
+  }
+  if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_shortgnd) {
+    //display error for shorted ground
+    Serial.println("shorted ground");
+  }
+  if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_shortvdd) {
+    //display error for shorted vdd
+    Serial.println("shorted vdd");
+  }
+  // etc...for other errors
+  if (temp_reading.error_code != DallasTemperature::device_error_code::device_connected) {
+    return;
+  }
+
+  float f = temp_reading.celcius; // do something with the temperature
+  //float f = temp_reading; // for backwards compatibility
+  //Serial.print(tempC);
+}// end printTemperature

@@ -38,6 +38,7 @@ void setup(void)
   digitalWrite(D8, LOW);
   pinMode(D12, OUTPUT);
   digitalWrite(D12, HIGH);
+//  Serial.flush();
   Serial.begin(115200);   // start serial port
   delay(500);
   Serial.flush();
@@ -48,7 +49,7 @@ void setup(void)
 
   sensors.begin();   // Start up the DallasTemprature library
   numberOfDevices = sensors.getDeviceCount();   // Grab a count of devices on the wire
-  for (int i = 0; i <= numberOfDevices; i++) {
+  for (int i = 0; i < numberOfDevices; i++) {
     Serial.print("TC");
     Serial.print(i);
     Serial.print(", ");
@@ -159,7 +160,8 @@ void loop(void)
       //		Serial.print("Temperature for device: ");
       //		Serial.print(i,DEC);
       // It responds almost immediately. Let's print out the data
-      printTemperature(tempDeviceAddress); // Use a simple function to print out the data
+      isError_AndPrintTemperature(tempDeviceAddress);
+//      printTemperature(tempDeviceAddress); // Use a simple function to print out the data
       Serial.print(", ");
     }
     //else ghost device! Check your power requirements and cabling
@@ -182,22 +184,22 @@ void isError_AndPrintTemperature(DeviceAddress deviceAddress)
   // consider utility functions for testing for specific error flags / codes
   if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_open) {
     //display error for device_fault_ope
-    Serial.println("device_fault_open");
+    Serial.print(" device_fault_open");
   }
   if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_shortgnd) {
     //display error for shorted ground
-    Serial.println("shorted ground");
+    Serial.print(" shorted ground");
   }
   if (temp_reading.error_code & DallasTemperature::device_error_code::device_fault_shortvdd) {
     //display error for shorted vdd
-    Serial.println("shorted vdd");
+    Serial.print(" shorted vdd");
   }
   // etc...for other errors
   if (temp_reading.error_code != DallasTemperature::device_error_code::device_connected) {
     return;
   }
 
-  float f = temp_reading.celcius; // do something with the temperature
-  //float f = temp_reading; // for backwards compatibility
-  //Serial.print(tempC);
+  //float f = temp_reading.celcius; // do something with the temperature
+  float f = temp_reading; // for backwards compatibility
+  Serial.print(f); 
 }// end printTemperature

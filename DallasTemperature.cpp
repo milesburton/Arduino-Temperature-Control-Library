@@ -723,13 +723,18 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
+int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress, byte retryCount = 0) {
 
 	ScratchPad scratchPad;
-	if (isConnected(deviceAddress, scratchPad))
-		return calculateTemperature(deviceAddress, scratchPad);
-	return DEVICE_DISCONNECTED_RAW;
-
+	
+	byte retries = 0;
+	
+	while (retries++ <= retryCount) {
+    if (isConnected(deviceAddress, scratchPad))
+      return calculateTemperature(deviceAddress, scratchPad);
+  	}
+  
+  	return DEVICE_DISCONNECTED_RAW;
 }
 
 // returns temperature in degrees C or DEVICE_DISCONNECTED_C if the
@@ -737,8 +742,8 @@ int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
 // the numeric value of DEVICE_DISCONNECTED_C is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-float DallasTemperature::getTempC(const uint8_t* deviceAddress) {
-	return rawToCelsius(getTemp(deviceAddress));
+float DallasTemperature::getTempC(const uint8_t* deviceAddress, byte retryCount = 0) {
+	return rawToCelsius(getTemp(deviceAddress, retryCount));
 }
 
 // returns temperature in degrees F or DEVICE_DISCONNECTED_F if the

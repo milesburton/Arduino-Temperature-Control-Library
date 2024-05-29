@@ -152,19 +152,19 @@ bool DallasTemperature::validAddress(const uint8_t* deviceAddress) {
 // finds an address at a given index on the bus
 // returns true if the device was found
 bool DallasTemperature::getAddress(uint8_t* deviceAddress, uint8_t index) {
+	if (index < devices) {
+		uint8_t depth = 0;
 
-	uint8_t depth = 0;
+		_wire->reset_search();
 
-	_wire->reset_search();
-
-	while (depth <= index && _wire->search(deviceAddress)) {
-		if (depth == index && validAddress(deviceAddress))
-			return true;
-		depth++;
+		while (depth <= index && _wire->search(deviceAddress)) {
+			if (depth == index && validAddress(deviceAddress))
+				return true;
+			depth++;
+		}
 	}
 
 	return false;
-
 }
 
 // attempt to determine if the device at the given address is connected to the bus
@@ -723,13 +723,18 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress,
 // the numeric value of DEVICE_DISCONNECTED_RAW is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
+int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress, byte retryCount = 0) {
 
 	ScratchPad scratchPad;
-	if (isConnected(deviceAddress, scratchPad))
-		return calculateTemperature(deviceAddress, scratchPad);
-	return DEVICE_DISCONNECTED_RAW;
-
+	
+	byte retries = 0;
+	
+	while (retries++ <= retryCount) {
+    if (isConnected(deviceAddress, scratchPad))
+      return calculateTemperature(deviceAddress, scratchPad);
+  	}
+  
+  	return DEVICE_DISCONNECTED_RAW;
 }
 
 // returns temperature in degrees C or DEVICE_DISCONNECTED_C if the
@@ -737,8 +742,8 @@ int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress) {
 // the numeric value of DEVICE_DISCONNECTED_C is defined in
 // DallasTemperature.h. It is a large negative number outside the
 // operating range of the device
-float DallasTemperature::getTempC(const uint8_t* deviceAddress) {
-	return rawToCelsius(getTemp(deviceAddress));
+float DallasTemperature::getTempC(const uint8_t* deviceAddress, byte retryCount = 0) {
+	return rawToCelsius(getTemp(deviceAddress, retryCount));
 }
 
 // returns temperature in degrees F or DEVICE_DISCONNECTED_F if the

@@ -1,17 +1,34 @@
----
 name: Arduino CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   runTest:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Ruby
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-      - run: |
+
+      # Step 3: Install Arduino CI gem
+      - name: Install Arduino CI
+        run: |
           gem install arduino_ci -v 1.5.0
-          arduino_ci.rb --skip-compilation
+
+      # Step 4: Run Arduino CI tests
+      - name: Run Arduino CI Tests
+        run: |
+          arduino_ci.rb --skip-examples-compilation

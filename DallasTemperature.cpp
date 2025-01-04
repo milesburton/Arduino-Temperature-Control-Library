@@ -62,12 +62,24 @@ extern "C" {
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
+#define NO_ALARM_HANDLER ((DallasTemperature::AlarmHandler *)0)
+
 // Constructors
 DallasTemperature::DallasTemperature() {
-#if REQUIRESALARMS
-    setAlarmHandler(nullptr);
-#endif
+    _wire = nullptr;
+    devices = 0;
+    ds18Count = 0;
+    parasite = false;
+    bitResolution = 9;
+    waitForConversion = true;
+    checkForConversion = true;
+    autoSaveScratchPad = true;
     useExternalPullup = false;
+#if REQUIRESALARMS
+    setAlarmHandler(NO_ALARM_HANDLER);
+    alarmSearchJunction = -1;
+    alarmSearchExhausted = 0;
+#endif
 }
 
 DallasTemperature::DallasTemperature(OneWire* _oneWire) : DallasTemperature() {
@@ -78,6 +90,7 @@ DallasTemperature::DallasTemperature(OneWire* _oneWire, uint8_t _pullupPin) : Da
     setPullupPin(_pullupPin);
 }
 
+// Setup & Configuration
 void DallasTemperature::setOneWire(OneWire* _oneWire) {
     _wire = _oneWire;
     devices = 0;
@@ -96,7 +109,6 @@ void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
     deactivateExternalPullup();
 }
 
-// Initialize the bus with retry logic
 void DallasTemperature::begin(void) {
     DeviceAddress deviceAddress;
     
@@ -105,7 +117,6 @@ void DallasTemperature::begin(void) {
         devices = 0;
         ds18Count = 0;
         
-        // Add delay for bus stabilization
         delay(INITIALIZATION_DELAY_MS);
         
         while (_wire->search(deviceAddress)) {
@@ -127,14 +138,23 @@ void DallasTemperature::begin(void) {
             }
         }
         
-        // If we found at least one device, exit retry loop
-        if (devices > 0) {
-            break;
-        }
+        if (devices > 0) break;
     }
 }
 
-// Device Information Methods
+// Device Information
+uint8_t DallasTemperature::getDeviceCount(void) {
+    return devices;
+}
+
+uint8_t DallasTemperature::getDS18Count(void) {
+    return ds18Count;
+}
+
+bool DallasTemperature::validAddress(const uint8_t* deviceAddress) {
+    return (_wire->crc8(const_cast<uint8_t*>(deviceAddress), 7) == deviceAddress[7]);
+}
+
 bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
     switch (deviceAddress[0]) {
         case DS18S20MODEL:
@@ -146,10 +166,6 @@ bool DallasTemperature::validFamily(const uint8_t* deviceAddress) {
         default:
             return false;
     }
-}
-
-bool DallasTemperature::validAddress(const uint8_t* deviceAddress) {
-    return (_wire->crc8(const_cast<uint8_t*>(deviceAddress), 7) == deviceAddress[7]);
 }
 
 bool DallasTemperature::getAddress(uint8_t* deviceAddress, uint8_t index) {
@@ -165,43 +181,193 @@ bool DallasTemperature::getAddress(uint8_t* deviceAddress, uint8_t index) {
             depth++;
         }
     }
-    
     return false;
 }
 
-// Device Count Methods
-uint8_t DallasTemperature::getDeviceCount(void) {
-    return devices;
+bool DallasTemperature::isConnected(const uint8_t* deviceAddress) {
+    ScratchPad scratchPad;
+    return isConnected(deviceAddress, scratchPad);
 }
 
-uint8_t DallasTemperature::getDS18Count(void) {
-    return ds18Count;
+bool DallasTemperature::isConnected(const uint8_t* deviceAddress, uint8_t* scratchPad) {
+    bool b = readScratchPad(deviceAddress, scratchPad);
+    return b && !isAllZeros(scratchPad) && (_wire->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
 }
 
-// Alternative device count verification method
-bool DallasTemperature::verifyDeviceCount(void) {
-    uint8_t actualCount = 0;
-    float temp;
+// Scratchpad operations
+bool DallasTemperature::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad) {
+    int b = _wire->reset();
+    if (b == 0) return false;
     
-    requestTemperatures();
+    _wire->select(deviceAddress);
+    _wire->write(READSCRATCH);
     
-    do {
-        temp = getTempCByIndex(actualCount);
-        if (temp > DEVICE_DISCONNECTED_C) {
-            actualCount++;
-        }
-    } while (temp > DEVICE_DISCONNECTED_C && actualCount < 255);
-    
-    if (actualCount > devices) {
-        devices = actualCount;
-        begin();
-        return true;
+    for (uint8_t i = 0; i < 9; i++) {
+        scratchPad[i] = _wire->read();
     }
     
-    return false;
+    b = _wire->reset();
+    return (b == 1);
 }
 
-// Temperature reading with retry functionality
+void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint8_t* scratchPad) {
+    _wire->reset();
+    _wire->select(deviceAddress);
+    _wire->write(WRITESCRATCH);
+    _wire->write(scratchPad[HIGH_ALARM_TEMP]); // high alarm temp
+    _wire->write(scratchPad[LOW_ALARM_TEMP]); // low alarm temp
+    
+    // DS1820 and DS18S20 have no configuration register
+    if (deviceAddress[0] != DS18S20MODEL) {
+        _wire->write(scratchPad[CONFIGURATION]);
+    }
+    
+    if (autoSaveScratchPad) {
+        saveScratchPad(deviceAddress);
+    } else {
+        _wire->reset();
+    }
+}
+
+bool DallasTemperature::readPowerSupply(const uint8_t* deviceAddress) {
+    bool parasiteMode = false;
+    _wire->reset();
+    if (deviceAddress == nullptr) {
+        _wire->skip();
+    } else {
+        _wire->select(deviceAddress);
+    }
+    
+    _wire->write(READPOWERSUPPLY);
+    if (_wire->read_bit() == 0) {
+        parasiteMode = true;
+    }
+    _wire->reset();
+    return parasiteMode;
+}
+
+// Resolution operations
+uint8_t DallasTemperature::getResolution() {
+    return bitResolution;
+}
+
+void DallasTemperature::setResolution(uint8_t newResolution) {
+    bitResolution = constrain(newResolution, 9, 12);
+    DeviceAddress deviceAddress;
+    _wire->reset_search();
+    for (uint8_t i = 0; i < devices; i++) {
+        if (_wire->search(deviceAddress) && validAddress(deviceAddress)) {
+            setResolution(deviceAddress, bitResolution, true);
+        }
+    }
+}
+
+uint8_t DallasTemperature::getResolution(const uint8_t* deviceAddress) {
+    if (deviceAddress[0] == DS18S20MODEL) return 12;
+    
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad)) {
+        if (deviceAddress[0] == DS1825MODEL && scratchPad[CONFIGURATION] & 0x80) {
+            return 12;
+        }
+        
+        switch (scratchPad[CONFIGURATION]) {
+            case TEMP_12_BIT: return 12;
+            case TEMP_11_BIT: return 11;
+            case TEMP_10_BIT: return 10;
+            case TEMP_9_BIT: return 9;
+        }
+    }
+    return 0;
+}
+
+bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
+    bool success = false;
+    
+    if (deviceAddress[0] == DS18S20MODEL) {
+        success = true;
+    } else {
+        newResolution = constrain(newResolution, 9, 12);
+        uint8_t newValue = 0;
+        ScratchPad scratchPad;
+        
+        if (isConnected(deviceAddress, scratchPad)) {
+            switch (newResolution) {
+                case 12: newValue = TEMP_12_BIT; break;
+                case 11: newValue = TEMP_11_BIT; break;
+                case 10: newValue = TEMP_10_BIT; break;
+                case 9:
+                default: newValue = TEMP_9_BIT; break;
+            }
+            
+            if (scratchPad[CONFIGURATION] != newValue) {
+                scratchPad[CONFIGURATION] = newValue;
+                writeScratchPad(deviceAddress, scratchPad);
+            }
+            success = true;
+        }
+    }
+    
+    if (!skipGlobalBitResolutionCalculation && success) {
+        bitResolution = newResolution;
+        if (devices > 1) {
+            DeviceAddress deviceAddr;
+            _wire->reset_search();
+            for (uint8_t i = 0; i < devices; i++) {
+                if (bitResolution == 12) break;
+                if (_wire->search(deviceAddr) && validAddress(deviceAddr)) {
+                    uint8_t b = getResolution(deviceAddr);
+                    if (b > bitResolution) bitResolution = b;
+                }
+            }
+        }
+    }
+    return success;
+}
+
+// Temperature operations
+DallasTemperature::request_t DallasTemperature::requestTemperatures() {
+    DallasTemperature::request_t req = {};
+    req.result = true;
+    
+    _wire->reset();
+    _wire->skip();
+    _wire->write(STARTCONVO, parasite);
+    
+    req.timestamp = millis();
+    if (!waitForConversion) return req;
+    
+    blockTillConversionComplete(bitResolution, req.timestamp);
+    return req;
+}
+
+DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
+    DallasTemperature::request_t req = {};
+    uint8_t deviceBitResolution = getResolution(deviceAddress);
+    if (deviceBitResolution == 0) {
+        req.result = false;
+        return req;
+    }
+    
+    _wire->reset();
+    _wire->select(deviceAddress);
+    _wire->write(STARTCONVO, parasite);
+    
+    req.timestamp = millis();
+    req.result = true;
+    
+    if (!waitForConversion) return req;
+    
+    blockTillConversionComplete(deviceBitResolution, req.timestamp);
+    return req;
+}
+
+DallasTemperature::request_t DallasTemperature::requestTemperaturesByIndex(uint8_t index) {
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, index);
+    return requestTemperaturesByAddress(deviceAddress);
+}
+
 int32_t DallasTemperature::getTemp(const uint8_t* deviceAddress, byte retryCount) {
     ScratchPad scratchPad;
     byte retries = 0;
@@ -223,178 +389,21 @@ float DallasTemperature::getTempF(const uint8_t* deviceAddress) {
     return rawToFahrenheit(getTemp(deviceAddress));
 }
 
-// Temperature request methods
-DallasTemperature::request_t DallasTemperature::requestTemperatures(void) {
-    DallasTemperature::request_t req = {};
-    req.result = true;
-
-    _wire->reset();
-    _wire->skip();
-    _wire->write(STARTCONVO, parasite);
-
-    req.timestamp = millis();
-    if (!waitForConversion) {
-        return req;
-    }
-    
-    blockTillConversionComplete(bitResolution, req.timestamp);
-    return req;
-}
-
-DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
-    request_t req = {};
-    uint8_t deviceBitResolution = getResolution(deviceAddress);
-    
-    if (deviceBitResolution == 0) {
-        req.result = false;
-        return req;
-    }
-
-    _wire->reset();
-    _wire->select(deviceAddress);
-    _wire->write(STARTCONVO, parasite);
-
-    req.timestamp = millis();
-    req.result = true;
-    
-    if (!waitForConversion) {
-        return req;
-    }
-
-    blockTillConversionComplete(deviceBitResolution, req.timestamp);
-    return req;
-}
-
-// Resolution control methods
-void DallasTemperature::setResolution(uint8_t newResolution) {
-    bitResolution = constrain(newResolution, 9, 12);
-    
+float DallasTemperature::getTempCByIndex(uint8_t index) {
     DeviceAddress deviceAddress;
-    _wire->reset_search();
-    
-    for (uint8_t i = 0; i < devices; i++) {
-        if (_wire->search(deviceAddress) && validAddress(deviceAddress)) {
-            setResolution(deviceAddress, bitResolution, true);
-        }
-    }
-}
-
-bool DallasTemperature::setResolution(const uint8_t* deviceAddress, uint8_t newResolution, bool skipGlobalBitResolutionCalculation) {
-    bool success = false;
-    
-    // DS1820 and DS18S20 have no resolution configuration register
-    if (deviceAddress[0] == DS18S20MODEL) {
-        success = true;
-    } else {
-        newResolution = constrain(newResolution, 9, 12);
-        uint8_t newValue = 0;
-        ScratchPad scratchPad;
-
-        if (isConnected(deviceAddress, scratchPad)) {
-            switch (newResolution) {
-                case 12:
-                    newValue = TEMP_12_BIT;
-                    break;
-                case 11:
-                    newValue = TEMP_11_BIT;
-                    break;
-                case 10:
-                    newValue = TEMP_10_BIT;
-                    break;
-                case 9:
-                default:
-                    newValue = TEMP_9_BIT;
-                    break;
-            }
-
-            if (scratchPad[CONFIGURATION] != newValue) {
-                scratchPad[CONFIGURATION] = newValue;
-                writeScratchPad(deviceAddress, scratchPad);
-            }
-            success = true;
-        }
-    }
-
-    // Update global resolution if needed
-    if (!skipGlobalBitResolutionCalculation && success) {
-        bitResolution = newResolution;
-        
-        if (devices > 1) {
-            DeviceAddress deviceAddr;
-            _wire->reset_search();
-            
-            for (uint8_t i = 0; i < devices; i++) {
-                if (bitResolution == 12) break;
-                
-                if (_wire->search(deviceAddr) && validAddress(deviceAddr)) {
-                    uint8_t b = getResolution(deviceAddr);
-                    if (b > bitResolution) bitResolution = b;
-                }
-            }
-        }
-    }
-
-    return success;
-}
-
-// Utility methods
-float DallasTemperature::toFahrenheit(float celsius) {
-    return (celsius * 1.8f) + 32.0f;
-}
-
-float DallasTemperature::toCelsius(float fahrenheit) {
-    return (fahrenheit - 32.0f) * 0.555555556f;
-}
-
-float DallasTemperature::rawToCelsius(int32_t raw) {
-    if (raw <= DEVICE_DISCONNECTED_RAW) {
+    if (!getAddress(deviceAddress, index)) {
         return DEVICE_DISCONNECTED_C;
     }
-    return (float)raw * 0.0078125f;  // 1/128
+    return getTempC(deviceAddress);
 }
 
-float DallasTemperature::rawToFahrenheit(int32_t raw) {
-    if (raw <= DEVICE_DISCONNECTED_RAW) {
+float DallasTemperature::getTempFByIndex(uint8_t index) {
+    DeviceAddress deviceAddress;
+    if (!getAddress(deviceAddress, index)) {
         return DEVICE_DISCONNECTED_F;
     }
-    return (float)raw * 0.0140625f + 32.0f;  // 1/128*1.8 + 32
+    return getTempF(deviceAddress);
 }
 
-int16_t DallasTemperature::celsiusToRaw(float celsius) {
-    return static_cast<int16_t>(celsius * 128.0f);
-}
-
-// Internal helper methods
-bool DallasTemperature::isAllZeros(const uint8_t* const scratchPad, const size_t length) {
-    for (size_t i = 0; i < length; i++) {
-        if (scratchPad[i] != 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-void DallasTemperature::activateExternalPullup() {
-    if (useExternalPullup) {
-        digitalWrite(pullupPin, LOW);
-    }
-}
-
-void DallasTemperature::deactivateExternalPullup() {
-    if (useExternalPullup) {
-        digitalWrite(pullupPin, HIGH);
-    }
-}
-
-// Memory management if required
-#if REQUIRESNEW
-void* DallasTemperature::operator new(unsigned int size) {
-    void* p = malloc(size);
-    memset(p, 0, size);
-    return p;
-}
-
-void DallasTemperature::operator delete(void* p) {
-    free(p);
-}
-#endif
+// Conversion operations
+void DallasTemperature::setWaitForCon

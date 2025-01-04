@@ -1,30 +1,6 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-/*
-MIT License
-
-Copyright (c) 2024
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 #define DALLASTEMPLIBVERSION "4.0.0"
 
 // Configuration
@@ -38,6 +14,7 @@ SOFTWARE.
 
 // Includes
 #include <inttypes.h>
+#include <Arduino.h>  // Added explicit Arduino.h include
 #ifdef __STM32F1__
 #include <OneWireSTM.h>
 #else
@@ -73,10 +50,25 @@ SOFTWARE.
 #define MAX_INITIALIZATION_RETRIES 3
 #define INITIALIZATION_DELAY_MS 50
 
+// Forward declare the OneWire class if not already declared
+class OneWire;
+
 typedef uint8_t DeviceAddress[8];
 
 class DallasTemperature {
 public:
+    // Temperature Request Structure - moved to public section
+    struct request_t {
+        bool result;
+        unsigned long timestamp;
+        operator bool() { return result; }
+    };
+
+#if REQUIRESALARMS
+    // Define AlarmHandler type before its use
+    typedef void AlarmHandler(const uint8_t*);
+#endif
+
     // Constructors
     DallasTemperature();
     DallasTemperature(OneWire*);
@@ -114,13 +106,6 @@ public:
     void setCheckForConversion(bool);
     bool getCheckForConversion(void);
 
-    // Temperature Request Structure
-    struct request_t {
-        bool result;
-        unsigned long timestamp;
-        operator bool() { return result; }
-    };
-
     // Temperature Operations
     request_t requestTemperatures(void);
     request_t requestTemperaturesByAddress(const uint8_t*);
@@ -146,8 +131,6 @@ public:
     bool getAutoSaveScratchPad(void);
 
 #if REQUIRESALARMS
-    // Alarm Handlers and Operations
-    typedef void AlarmHandler(const uint8_t*);
     void setHighAlarmTemp(const uint8_t*, int8_t);
     void setLowAlarmTemp(const uint8_t*, int8_t);
     int8_t getHighAlarmTemp(const uint8_t*);
@@ -175,12 +158,10 @@ public:
     static float rawToFahrenheit(int32_t);
 
 #if REQUIRESNEW
-    // Memory Management
     void* operator new(unsigned int);
     void operator delete(void*);
 #endif
 
-    // Conversion Completion Handlers
     void blockTillConversionComplete(uint8_t);
     void blockTillConversionComplete(uint8_t, unsigned long);
     void blockTillConversionComplete(uint8_t, request_t);
@@ -207,7 +188,6 @@ private:
     void deactivateExternalPullup(void);
 
 #if REQUIRESALARMS
-    // Internal Alarm State
     uint8_t alarmSearchAddress[8];
     int8_t alarmSearchJunction;
     uint8_t alarmSearchExhausted;

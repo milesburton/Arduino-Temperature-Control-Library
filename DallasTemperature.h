@@ -146,6 +146,7 @@ public:
     bool getAutoSaveScratchPad(void);
 
 #if REQUIRESALARMS
+    // Alarm Handlers and Operations
     typedef void AlarmHandler(const uint8_t*);
     void setHighAlarmTemp(const uint8_t*, int8_t);
     void setLowAlarmTemp(const uint8_t*, int8_t);
@@ -174,10 +175,12 @@ public:
     static float rawToFahrenheit(int32_t);
 
 #if REQUIRESNEW
+    // Memory Management
     void* operator new(unsigned int);
     void operator delete(void*);
 #endif
 
+    // Conversion Completion Handlers
     void blockTillConversionComplete(uint8_t);
     void blockTillConversionComplete(uint8_t, unsigned long);
     void blockTillConversionComplete(uint8_t, request_t);
@@ -204,6 +207,7 @@ private:
     void deactivateExternalPullup(void);
 
 #if REQUIRESALARMS
+    // Internal Alarm State
     uint8_t alarmSearchAddress[8];
     int8_t alarmSearchJunction;
     uint8_t alarmSearchExhausted;

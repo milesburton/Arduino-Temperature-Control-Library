@@ -12,7 +12,7 @@ compile:
 unittest:
   # Unit test platforms and dependencies
   platforms:
-    - host          # Native host system (Linux in this case)
+    - uno          # Native host system (Linux in this case)
   libraries:
     - "OneWire"     # Ensure OneWire library is available for testing
 

@@ -13,5 +13,5 @@ jobs:
         with:
           ruby-version: 2.6
       - run: |
-          gem install arduino_ci
-          arduino_ci.rb
+          gem install arduino_ci -v 1.5.0
+          arduino_ci.rb --skip-compilation

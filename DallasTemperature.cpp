@@ -3,8 +3,6 @@
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
 
-#include "DallasTemperature.h"
-
 // for Particle support
 // yield() is not a standard function, but instead wraps Particle process
 // https://community.particle.io/t/syscall-yield-operation/40708/2
@@ -19,6 +17,8 @@ extern "C" {
 #include "WConstants.h"
 }
 #endif
+
+#include "DallasTemperature.h"
 
 // OneWire commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad

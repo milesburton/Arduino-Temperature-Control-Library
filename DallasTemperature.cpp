@@ -1,69 +1,63 @@
-#pragma once
+#include "DallasTemperature.h"
 
-#include <stdint.h>
-#include <Arduino.h>
-#ifdef __STM32F1__
-#include <OneWireSTM.h>
-#else
-#include <OneWire.h>
-#endif
+// Constructors
+DallasTemperature::DallasTemperature(OneWire* oneWire) : oneWire(oneWire) {}
 
-namespace Dallas {
+// Initialization
+void DallasTemperature::begin() {
+    if (!oneWire) return;
+    oneWire->reset_search();
+    parasitePowerMode = false;
+    deviceCount = 0;
 
-class DallasTemperature {
-public:
-    static constexpr const char* LIB_VERSION = "4.0.0";
+    DeviceAddress address;
+    while (oneWire->search(address)) {
+        deviceCount++;
+        if (readPowerSupply(address)) {
+            parasitePowerMode = true;
+        }
+    }
+    oneWire->reset_search();
+}
 
-    using DeviceAddress = uint8_t[8];
-    using ScratchPad = uint8_t[9];
+// Get the total number of devices
+uint8_t DallasTemperature::getDeviceCount() const {
+    return deviceCount;
+}
 
-    struct Request {
-        bool result;
-        unsigned long timestamp;
-        operator bool() const { return result; }
-    };
+// Get the address of a device by index
+bool DallasTemperature::getAddress(DeviceAddress deviceAddress, uint8_t index) const {
+    if (!oneWire) return false;
 
-    // Constructors
-    DallasTemperature();
-    explicit DallasTemperature(OneWire* oneWire);
-    DallasTemperature(OneWire* oneWire, uint8_t pullupPin);
+    uint8_t count = 0;
+    oneWire->reset_search();
+    while (count <= index && oneWire->search(deviceAddress)) {
+        if (count == index) return true;
+        count++;
+    }
+    return false;
+}
 
-    // Configuration
-    void begin();
-    void setOneWire(OneWire* oneWire);
-    void setPullupPin(uint8_t pullupPin);
+// Check if the bus is using parasite power
+bool DallasTemperature::isParasitePowerMode() const {
+    return parasitePowerMode;
+}
 
-    // Device Management
-    uint8_t getDeviceCount() const;
-    uint8_t getDS18Count() const;
-    bool isConnected(const DeviceAddress& address) const;
-    bool isConnected(const DeviceAddress& address, ScratchPad& scratchPad) const;
+// Read the power supply mode of a specific device or all devices
+bool DallasTemperature::readPowerSupply(const DeviceAddress deviceAddress) const {
+    if (!oneWire) return false;
 
-    // Temperature Reading
-    Request requestTemperatures();
-    Request requestTemperaturesByAddress(const DeviceAddress& address);
-    Request requestTemperaturesByIndex(uint8_t index);
-    float getTempC(const DeviceAddress& address, uint8_t retryCount = 0) const;
-    float getTempF(const DeviceAddress& address, uint8_t retryCount = 0) const;
+    oneWire->reset();
+    if (deviceAddress) {
+        oneWire->select(deviceAddress);
+    } else {
+        oneWire->skip(); // Skip ROM command for all devices
+    }
+    oneWire->write(0xB4); // READ POWER SUPPLY command
+    return (oneWire->read_bit() == 0);
+}
 
-    // Utility Methods
-    static float toFahrenheit(float celsius);
-    static float toCelsius(float fahrenheit);
-    static float rawToCelsius(int32_t raw);
-    static float rawToFahrenheit(int32_t raw);
-
-private:
-    bool parasitePowerMode = false;
-    uint8_t bitResolution = 9;
-    OneWire* oneWire = nullptr;
-    uint8_t pullupPin = 0;
-
-    bool readScratchPad(const DeviceAddress& address, ScratchPad& scratchPad) const;
-    bool readPowerSupply(const DeviceAddress& address) const;
-    void activateExternalPullup() const;
-    void deactivateExternalPullup() const;
-
-    int32_t calculateTemperature(const DeviceAddress& address, const ScratchPad& scratchPad) const;
-};
-
-} // namespace Dallas
+// Reset search to start looking for devices again
+void DallasTemperature::resetSearch() const {
+    if (oneWire) oneWire->reset_search();
+}

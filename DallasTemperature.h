@@ -1,70 +1,41 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
 #include <Arduino.h>
-#ifdef __STM32F1__
-#include <OneWireSTM.h>
+
+// Platform-specific OneWire include
+#if defined(STM32)
+#include <OneWireSTM.h> // STM32-specific OneWire implementation
 #else
-#include <OneWire.h>
+#include <OneWire.h>    // Default OneWire implementation
 #endif
 
-namespace Dallas {
+// Define DeviceAddress globally for compatibility
+typedef uint8_t DeviceAddress[8];
 
 class DallasTemperature {
 public:
-    static constexpr const char* LIB_VERSION = "4.0.0";
-
-    using DeviceAddress = std::array<uint8_t, 8>;
-    using ScratchPad = std::array<uint8_t, 9>;
-
-    struct Request {
-        bool result;
-        unsigned long timestamp;
-        operator bool() const { return result; }
-    };
+    // Library version
+    static constexpr const char* LIB_VERSION = "4.0.1";
 
     // Constructors
-    DallasTemperature();
     explicit DallasTemperature(OneWire* oneWire);
-    DallasTemperature(OneWire* oneWire, uint8_t pullupPin);
 
-    // Configuration
+    // Initialization
     void begin();
-    void setOneWire(OneWire* oneWire);
-    void setPullupPin(uint8_t pullupPin);
 
     // Device Management
     uint8_t getDeviceCount() const;
-    uint8_t getDS18Count() const;
-    bool isConnected(const DeviceAddress& address) const;
-    bool isConnected(const DeviceAddress& address, ScratchPad& scratchPad) const;
+    bool getAddress(DeviceAddress deviceAddress, uint8_t index) const;
+    bool isParasitePowerMode() const;
 
-    // Temperature Reading
-    Request requestTemperatures();
-    Request requestTemperaturesByAddress(const DeviceAddress& address);
-    Request requestTemperaturesByIndex(uint8_t index);
-    float getTempC(const DeviceAddress& address, uint8_t retryCount = 0) const;
-    float getTempF(const DeviceAddress& address, uint8_t retryCount = 0) const;
-
-    // Utility Methods
-    static float toFahrenheit(float celsius);
-    static float toCelsius(float fahrenheit);
-    static float rawToCelsius(int32_t raw);
-    static float rawToFahrenheit(int32_t raw);
+    // Scratchpad Operations
+    bool readPowerSupply(const DeviceAddress deviceAddress = nullptr) const;
 
 private:
-    bool parasitePowerMode = false;
-    uint8_t bitResolution = 9;
     OneWire* oneWire = nullptr;
-    uint8_t pullupPin = 0;
+    bool parasitePowerMode = false;
+    uint8_t deviceCount = 0;
 
-    bool readScratchPad(const DeviceAddress& address, ScratchPad& scratchPad) const;
-    bool readPowerSupply(const DeviceAddress& address) const;
-    void activateExternalPullup() const;
-    void deactivateExternalPullup() const;
-
-    int32_t calculateTemperature(const DeviceAddress& address, const ScratchPad& scratchPad) const;
+    // Helper Methods
+    void resetSearch() const;
 };
-
-} // namespace Dallas

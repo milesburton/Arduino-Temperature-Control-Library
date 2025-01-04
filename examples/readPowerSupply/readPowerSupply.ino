@@ -1,12 +1,3 @@
-// AUTHOR: Rob Tillaart
-// VERSION: 0.2.0
-// PURPOSE: demo
-// DATE: 2025-01-04
-//
-// Released to the public domain
-//
-
-// Include the libraries we need
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -17,68 +8,56 @@
 OneWire oneWire(ONE_WIRE_BUS);
 
 // Pass our oneWire reference to Dallas Temperature.
-Dallas::DallasTemperature sensors(&oneWire);
+DallasTemperature sensors(&oneWire);
 
 // Arrays to hold device addresses
-Dallas::DeviceAddress insideThermometer, outsideThermometer;
+DeviceAddress insideThermometer, outsideThermometer;
 
-// Assign address manually. The addresses below will need to be changed
-// to valid device addresses on your bus. Device address can be retrieved
-// by using either oneWire.search(deviceAddress) or individually via
-// sensors.getAddress(deviceAddress, index)
-// Example:
-// Dallas::DeviceAddress insideThermometer = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
-// Dallas::DeviceAddress outsideThermometer = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
+void setup() {
+    Serial.begin(115200);
+    Serial.println("Arduino Temperature Control Library Demo - readPowerSupply");
 
-int devCount = 0;
+    sensors.begin();
 
-/*
- * The setup function. We only start the sensors here
- */
-void setup(void) {
-  Serial.begin(115200);
-  Serial.println("Arduino Temperature Control Library Demo - readPowerSupply");
+    // Count devices
+    int deviceCount = sensors.getDeviceCount();
+    Serial.print("Device count: ");
+    Serial.println(deviceCount);
 
-  sensors.begin();
+    // Check parasite power
+    Serial.print("Parasite power is: ");
+    if (sensors.isParasitePowerMode()) Serial.println("ON");
+    else Serial.println("OFF");
 
-  devCount = sensors.getDeviceCount();
-  Serial.print("#devices: ");
-  Serial.println(devCount);
+    // Get device addresses
+    if (!sensors.getAddress(insideThermometer, 0)) {
+        Serial.println("Unable to find address for Device 0");
+    }
+    if (!sensors.getAddress(outsideThermometer, 1)) {
+        Serial.println("Unable to find address for Device 1");
+    }
 
-  // Report parasite power requirements
-  Serial.print("Parasite power is: ");
-  if (sensors.isParasitePowerMode()) Serial.println("ON"); // Check parasite mode globally
-  else Serial.println("OFF");
+    // Print addresses
+    Serial.print("Device 0 Address: ");
+    printAddress(insideThermometer);
+    Serial.println();
+    Serial.print("Power = parasite: ");
+    Serial.println(sensors.readPowerSupply(insideThermometer));
 
-  // Search for devices on the bus and assign based on an index
-  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0");
-  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1");
-
-  // Show the addresses we found on the bus
-  Serial.print("Device 0 Address: ");
-  printAddress(insideThermometer);
-  Serial.println();
-  Serial.print("Power = parasite: ");
-  Serial.println(sensors.readPowerSupply(insideThermometer));
-  Serial.println();
-
-  Serial.print("Device 1 Address: ");
-  printAddress(outsideThermometer);
-  Serial.println();
-  Serial.print("Power = parasite: ");
-  Serial.println(sensors.readPowerSupply(outsideThermometer));
-  Serial.println();
+    Serial.print("Device 1 Address: ");
+    printAddress(outsideThermometer);
+    Serial.println();
+    Serial.print("Power = parasite: ");
+    Serial.println(sensors.readPowerSupply(outsideThermometer));
 }
 
-// Function to print a device address
-void printAddress(Dallas::DeviceAddress deviceAddress) {
-  for (uint8_t i = 0; i < 8; i++) {
-    // Zero pad the address if necessary
-    if (deviceAddress[i] < 0x10) Serial.print("0");
-    Serial.print(deviceAddress[i], HEX);
-  }
+void loop() {
+    // Empty
 }
 
-// Empty on purpose
-void loop(void) {
+void printAddress(DeviceAddress deviceAddress) {
+    for (uint8_t i = 0; i < 8; i++) {
+        if (deviceAddress[i] < 0x10) Serial.print("0");
+        Serial.print(deviceAddress[i], HEX);
+    }
 }

@@ -159,10 +159,10 @@ public:
 	request_t requestTemperaturesByIndex(uint8_t);
 
 	// returns temperature raw value (12 bit integer of 1/128 degrees C)
-	int32_t getTemp(const uint8_t*, byte retryCount = 0);
+	int32_t getTemp(const uint8_t*);
 
 	// returns temperature in degrees C
-	float getTempC(const uint8_t*, byte retryCount = 0);
+	float getTempC(const uint8_t*);
 
 	// returns temperature in degrees F
 	float getTempF(const uint8_t*);

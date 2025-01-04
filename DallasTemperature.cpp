@@ -224,8 +224,8 @@ float DallasTemperature::getTempF(const uint8_t* deviceAddress) {
 }
 
 // Temperature request methods
-request_t DallasTemperature::requestTemperatures(void) {
-    request_t req = {};
+DallasTemperature::request_t DallasTemperature::requestTemperatures(void) {
+    DallasTemperature::request_t req = {};
     req.result = true;
 
     _wire->reset();
@@ -241,7 +241,7 @@ request_t DallasTemperature::requestTemperatures(void) {
     return req;
 }
 
-request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
+DallasTemperature::request_t DallasTemperature::requestTemperaturesByAddress(const uint8_t* deviceAddress) {
     request_t req = {};
     uint8_t deviceBitResolution = getResolution(deviceAddress);
     

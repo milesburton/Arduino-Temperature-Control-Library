@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Note this is intended for use within the devcontainer
-
 # Set error handling
 set -e
 
@@ -19,16 +17,12 @@ compile_for_board() {
     local fqbn=$1
     local sketch=$2
     echo "📦 Compiling $sketch for $fqbn..."
-    arduino-cli compile --fqbn $fqbn "$sketch"
+    arduino-cli compile --fqbn $fqbn "$sketch" --library .
 }
 
 # Function to build library and examples
 build() {
     echo "🔨 Building library and examples..."
-    
-    # Compile library
-    echo "📚 Installing library..."
-    arduino-cli lib install .
     
     # Compile all examples
     echo "🔍 Compiling examples..."

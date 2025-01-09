@@ -1,88 +1,120 @@
+
+# 🌡️ Arduino Temperature Control Library
+
 [![Arduino CI](https://github.com/milesburton/Arduino-Temperature-Control-Library/workflows/Arduino%20CI/badge.svg)](https://github.com/marketplace/actions/arduino_ci)
 [![Arduino-lint](https://github.com/milesburton/Arduino-Temperature-Control-Library/actions/workflows/arduino-lint.yml/badge.svg)](https://github.com/RobTillaart/AS5600/actions/workflows/arduino-lint.yml)
 [![JSON check](https://github.com/milesburton/Arduino-Temperature-Control-Library/actions/workflows/jsoncheck.yml/badge.svg)](https://github.com/RobTillaart/AS5600/actions/workflows/jsoncheck.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/milesburton/Arduino-Temperature-Control-Library/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/milesburton/Arduino-Temperature-Control-Library.svg?maxAge=3600)](https://github.com/milesburton/Arduino-Temperature-Control-Library/releases)
 
+A robust and feature-complete Arduino library for Maxim Temperature Integrated Circuits.
 
-# Arduino Library for Maxim Temperature Integrated Circuits
+## 📌 Supported Devices
 
-## Usage
+- DS18B20
+- DS18S20 (⚠️ Known issues with this series)
+- DS1822
+- DS1820
+- MAX31820
+- MAX31850
 
-This library supports the following devices :
+## 🚀 Installation
 
+### Using Arduino IDE Library Manager (Recommended)
+1. Open Arduino IDE
+2. Go to Tools > Manage Libraries...
+3. Search for "DallasTemperature"
+4. Click Install
+5. Also install the required "OneWire" library by Paul Stoffregen using the same method
 
-* DS18B20
-* DS18S20 - Please note there appears to be an issue with this series.
-* DS1822
-* DS1820
-* MAX31820
-* MAX31850
+### Manual Installation
+1. Download the latest release from [GitHub releases](https://github.com/milesburton/Arduino-Temperature-Control-Library/releases)
+2. In Arduino IDE, go to Sketch > Include Library > Add .ZIP Library...
+3. Select the downloaded ZIP file
+4. Repeat steps 1-3 for the required "OneWire" library
 
+## 📝 Basic Usage
 
-You will need a pull-up resistor of about 5 KOhm between the 1-Wire data line
-and your 5V power. If you are using the DS18B20, ground pins 1 and 3. The
-centre pin is the data line '1-wire'.
+1. **Hardware Setup**
+   - Connect a 4k7 kΩ pull-up resistor between the 1-Wire data line and 5V power. Note this applies to the Arduino platform, for ESP32 and 8266 you'll need to adjust the resistor value accordingly.
+   - For DS18B20: Ground pins 1 and 3 (the centre pin is the data line)
+   - For reliable readings, see pull-up requirements in the [DS18B20 datasheet](https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf) (page 7)
 
-In case of temperature conversion problems (result is `-85`), strong pull-up setup may be necessary. See section 
-_Powering the DS18B20_ in 
-[DS18B20 datasheet](https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf) (page 7)
-and use `DallasTemperature(OneWire*, uint8_t)` constructor.
+2. **Code Example**
+   ```cpp
+   #include <OneWire.h>
+   #include <DallasTemperature.h>
 
-We have included a "REQUIRESNEW" and "REQUIRESALARMS" definition. If you 
-want to slim down the code feel free to use either of these by including
+   // Data wire is connected to GPIO 4
+   #define ONE_WIRE_BUS 4
 
+   OneWire oneWire(ONE_WIRE_BUS);
+   DallasTemperature sensors(&oneWire);
 
+   void setup(void) {
+     Serial.begin(9600);
+     sensors.begin();
+   }
 
-	#define REQUIRESNEW 
+   void loop(void) { 
+     sensors.requestTemperatures(); 
+     float tempC = sensors.getTempCByIndex(0);
+     Serial.print("Temperature: ");
+     Serial.print(tempC);
+     Serial.println("°C");
+     delay(1000);
+   }
+   ```
 
-or 
+## 🛠️ Advanced Features
 
-	#define REQUIRESALARMS
+- Multiple sensors on the same bus
+- Temperature conversion by address (`getTempC(address)` and `getTempF(address)`)
+- Asynchronous mode (added in v3.7.0)
+- Configurable resolution
 
+### Configuration Options
 
-at the top of DallasTemperature.h
+You can slim down the code by defining the following at the top of DallasTemperature.h:
 
-Finally, please include OneWire from Paul Stoffregen in the library manager before you begin.
+```cpp
+#define REQUIRESNEW      // Use if you want to minimise code size
+#define REQUIRESALARMS   // Use if you need alarm functionality
+```
 
-## Credits
+## 📚 Additional Documentation
 
-The OneWire code has been derived from
-http://www.arduino.cc/playground/Learning/OneWire.
-Miles Burton <miles@mnetcs.com> originally developed this library.
-Tim Newsome <nuisance@casualhacker.net> added support for multiple sensors on
-the same bus.
-Guil Barros [gfbarros@bappos.com] added getTempByAddress (v3.5)
-   Note: these are implemented as getTempC(address) and getTempF(address)
-Rob Tillaart [rob.tillaart@gmail.com] added async modus (v3.7.0)
+Visit our [Wiki](https://www.milesburton.com/w/index.php/Dallas_Temperature_Control_Library) for detailed documentation.
 
+## 🔧 Library Development
 
-## Website
+If you want to contribute to the library development:
 
+### Using Dev Container
+The project includes a development container configuration for VS Code that provides a consistent development environment.
 
-Additional documentation may be found here
-https://www.milesburton.com/w/index.php/Dallas_Temperature_Control_Library
+1. **Prerequisites**
+   - Visual Studio Code
+   - Docker
+   - VS Code Remote - Containers extension
 
-# License
+2. **Development Commands**
+   Within the dev container, use:
+   - `arduino-build` - Compile the library and examples
+   - `arduino-test` - Run the test suite
+   - `arduino-build-test` - Complete build and test process
 
-MIT License
+   > Note: Currently compiling against arduino:avr:uno environment
 
-Copyright (c) [2025] [Miles Burton]
+## ✨ Credits
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+- Original development by Miles Burton <mail@milesburton.com>
+- Multiple sensor support by Tim Newsome <nuisance@casualhacker.net>
+- Address-based temperature reading by Guil Barros [gfbarros@bappos.com]
+- Async mode by Rob Tillaart [rob.tillaart@gmail.com]
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## 📄 License
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT License | Copyright (c) 2025 Miles Burton
+
+Full license text available in [LICENSE](LICENSE) file.

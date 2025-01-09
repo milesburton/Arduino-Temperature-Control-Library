@@ -8,25 +8,15 @@ echo "Updating installed libraries..."
 arduino-cli lib update-index
 arduino-cli lib upgrade
 
+# Update Arduino cores
+echo "Updating ESP8266 and ESP32 cores..."
+arduino-cli core install esp8266:esp8266
+arduino-cli core install esp32:esp32
+
 # List of libraries to ensure are installed/updated
 LIBRARIES=(
     "OneWire"
-    "DallasTemperature"
-    "Adafruit BusIO"
-    "Adafruit Unified Sensor"
-    "DHT sensor library"
-    "WiFiManager"
-    "ArduinoJson"
-    "PubSubClient"
-    "ESP8266WiFi"
-    "ESP32"
-    "Wire"
-    "SPI"
-    "FastLED"
-    "NTPClient"
-    "AsyncTCP"
-    "ESPAsyncTCP"
-    "ESPAsyncWebServer"
+    "ArduinoUnit"
 )
 
 echo "Checking and installing libraries..."

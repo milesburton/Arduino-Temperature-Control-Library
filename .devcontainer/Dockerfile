@@ -28,25 +28,13 @@ COPY arduino-cli.yaml /root/.arduino15/arduino-cli.yaml
 # Install build essentials
 RUN apt-get update && apt-get install -y build-essential
 
-# Install common Arduino libraries
+# Install Arduino cores for ESP8266 and ESP32
+RUN arduino-cli core install esp8266:esp8266 esp32:esp32
+
+# Install only required dependencies for DallasTemperature library
 RUN arduino-cli lib install \
     "OneWire" \
-    "DallasTemperature" \
-    "Adafruit BusIO" \
-    "Adafruit Unified Sensor" \
-    "DHT sensor library" \
-    "WiFiManager" \
-    "ArduinoJson" \
-    "PubSubClient" \
-    "ESP8266WiFi" \
-    "ESP32" \
-    "Wire" \
-    "SPI" \
-    "FastLED" \
-    "NTPClient" \
-    "AsyncTCP" \
-    "ESPAsyncTCP" \
-    "ESPAsyncWebServer"
+    "ArduinoUnit"  # For testing
 
 # Verify library installation
 RUN arduino-cli lib list
@@ -54,9 +42,6 @@ RUN arduino-cli lib list
 # Copy update script
 COPY update-libraries.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/update-libraries.sh
-
-# Add a weekly cron job to update libraries
-RUN (crontab -l 2>/dev/null; echo "0 0 * * 0 /usr/local/bin/update-libraries.sh > /var/log/library-updates.log 2>&1") | crontab -
 
 # Add aliases for build operations
 RUN echo 'alias arduino-build="./build.sh build"' >> /home/vscode/.bashrc && \

@@ -14,11 +14,13 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sudo sh
           export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin
-          arduino-cli version
+          echo "Arduino CLI version:"
+          arduino-cli version  # Check the version to confirm installation
 
       # Step 3: Install necessary cores
       - name: Install Arduino cores
         run: |
+          export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin  # Ensure it's in the PATH
           arduino-cli core update-index
           arduino-cli core install arduino:avr
           arduino-cli core install arduino:sam
@@ -28,11 +30,13 @@ jobs:
       # Debugging Step 1: Check installed cores
       - name: List installed cores
         run: |
+          export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin  # Ensure it's in the PATH
           arduino-cli core list
 
       # Debugging Step 2: Check OneWire library
       - name: Check OneWire library installation
         run: |
+          export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin  # Ensure it's in the PATH
           arduino-cli lib list | grep OneWire
 
       # Step 4: Install Ruby and Arduino CI
@@ -48,6 +52,7 @@ jobs:
       # Step 5: Run Arduino CI Tests
       - name: Run Arduino CI Tests
         run: |
+          export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin  # Ensure it's in the PATH
           arduino_ci.rb
 
       # Debugging Step 3: Check the working directory and Arduino config

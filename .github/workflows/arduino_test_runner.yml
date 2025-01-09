@@ -1,12 +1,4 @@
-name: Arduino CI
-
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+on: [push, pull_request]
 
 jobs:
   runTest:
@@ -17,45 +9,49 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 1.5: Debug .arduino-ci.yml
-      - name: Debug .arduino-ci.yml
-        run: |
-          cat .arduino-ci.yml        
-
       # Step 2: Install Arduino CLI
       - name: Install Arduino CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sudo sh
+          export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin
+          arduino-cli version
 
-      # Step 3: Add Arduino CLI to PATH
-      - name: Add Arduino CLI to PATH
+      # Step 3: Install necessary cores
+      - name: Install Arduino cores
         run: |
-          echo "/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin" >> $GITHUB_PATH
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+          arduino-cli core install arduino:sam
+          arduino-cli core install esp8266:esp8266
+          arduino-cli core install adafruit:samd
 
-      # Step 4: Set up Ruby
+      # Debugging Step 1: Check installed cores
+      - name: List installed cores
+        run: |
+          arduino-cli core list
+
+      # Debugging Step 2: Check OneWire library
+      - name: Check OneWire library installation
+        run: |
+          arduino-cli lib list | grep OneWire
+
+      # Step 4: Install Ruby and Arduino CI
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
 
-      # Step 5: Install Arduino CI gem
       - name: Install Arduino CI
         run: |
           gem install arduino_ci -v 1.5.0
 
-      # Step 6: Install OneWire Library
-      - name: Install OneWire Library
-        run: |
-          arduino-cli lib install "OneWire"
-
-      - name: Debug .arduino-ci.yml Configuration and Arduino Setup
-        run: |
-          arduino-cli core list
-          arduino-cli lib list
-          cat .arduino-ci.yml
-        
-
-      # Step 7: Run Arduino CI tests
+      # Step 5: Run Arduino CI Tests
       - name: Run Arduino CI Tests
         run: |
           arduino_ci.rb
+
+      # Debugging Step 3: Check the working directory and Arduino config
+      - name: Check working directory and Arduino config
+        run: |
+          echo "Working directory: $(pwd)"
+          cat .arduino-ci.yml

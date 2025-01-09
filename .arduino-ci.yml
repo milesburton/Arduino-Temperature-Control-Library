@@ -1,39 +1,29 @@
 compile:
-  # Compile tests on multiple Arduino platforms
   platforms:
-    - uno          # Standard AVR platform
-    - due          # SAM platform
-    - m4           # SAMD platform (Adafruit Feather M4 or similar)
-    # Add additional platforms if needed, like STM32 or ESP32
-    # - mega2560    # If needed for expanded AVR testing
-    # - stm32:disco_f407vg # Example STM32 board, adjust for your target board
+    - uno
+    - due
+    - m4
 
 unittest:
-  # Unit test platforms and dependencies
   platforms:
-    - uno          # Native host system (Linux in this case)
+    - uno
   libraries:
-    - "OneWire"     # Ensure OneWire library is available for testing
+    - "OneWire"
 
-# Additional configuration for Arduino CI
-# Ensure to specify paths, include additional debugging output
-# and validate library and core installation.
+packages:
+  libraries:
+    - source-path: .
+      platforms:
+        - uno
+        - due
+        - m4
+    - name: OneWire
 
-# Debugging output added to check the setup.
-debug:
-  - name: Debug Setup
-    run: |
-      echo "Checking installed cores..."
-      arduino-cli core list
-      echo "Checking available libraries..."
-      arduino-cli lib list
-      echo "Checking if OneWire library is installed..."
-      arduino-cli lib list | grep OneWire
+directories:
+  tests: test
 
-# Test the configuration and verbose flag for debugging Arduino CI.
-run_tests:
-  name: Run Arduino CI Tests with Debugging
-  run: |
-    echo "Running Arduino CI tests with verbose output..."
-    export PATH=$PATH:/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin
-    arduino_ci.rb --verbose  # Added verbose flag for debugging
+aux_libraries:
+  - OneWire
+
+dependencies:
+  arduino-ci: "~>1.5.0"

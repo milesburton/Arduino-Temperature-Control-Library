@@ -506,7 +506,6 @@ void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution) {
 
 void DallasTemperature::blockTillConversionComplete(uint8_t bitResolution, unsigned long start) {
     if (checkForConversion && !parasite) {
-        unsigned long delayInMillis = millisToWaitForConversion(bitResolution);
         while (!isConversionComplete() && ((unsigned long)(millis() - start) < (unsigned long)MAX_CONVERSION_TIMEOUT)) {
             yield();
         }

@@ -24,7 +24,6 @@ jobs:
           arduino-cli core update-index
           arduino-cli core install arduino:avr
           arduino-cli core install arduino:sam
-          arduino-cli core install esp8266:esp8266   # Ensure we install the ESP8266 core properly
           arduino-cli core install adafruit:samd
 
       # Debugging Step 1: Check installed cores

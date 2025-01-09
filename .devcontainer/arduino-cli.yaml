@@ -1,19 +1,15 @@
 compile:
-  # Compile tests for Arduino Uno platform
+  # Choosing to run compilation tests on 2 different Arduino platforms
   platforms:
     - uno
-
+    - due
+    # - zero         # SAMD covered by M4
+    # - leonardo     # AVR covered by UNO
+    - m4
+    # - esp32        # errors on OneWire =>  util/crc16.h  vs  rom/crc.h
+    # - esp8266
+    # - mega2560     # AVR covered by UNO
 unittest:
-  # Unit test platforms and dependencies
-  platforms:
-    - uno
+  # These dependent libraries will be installed
   libraries:
-    - "OneWire"    # Required dependency for DallasTemperature
-
-compile_options:
-  libraries:
-    - "OneWire"    # Required dependency for DallasTemperature
-
-verify_options:
-  libraries:
-    - "OneWire"    # Required dependency for DallasTemperature
+    - "OneWire"

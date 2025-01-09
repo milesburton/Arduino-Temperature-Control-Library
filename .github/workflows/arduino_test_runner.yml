@@ -31,4 +31,4 @@ jobs:
       # Step 4: Run Arduino CI tests
       - name: Run Arduino CI Tests
         run: |
-          arduino_ci.rb --skip-examples-compilation
+          arduino_ci.rb

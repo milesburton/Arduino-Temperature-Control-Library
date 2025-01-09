@@ -1,4 +1,5 @@
 name: Arduino CI
+
 on:
   push:
     branches:
@@ -6,27 +7,28 @@ on:
   pull_request:
     branches:
       - master
+
 jobs:
   runTest:
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout Code
         uses: actions/checkout@v3
-        
+
+      # Step 2: Set up Ruby
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-          
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y avr-libc
-          
+
+      # Step 3: Install Arduino CI gem
       - name: Install Arduino CI
         run: |
           gem install arduino_ci -v 1.5.0
-          
+
+      # Step 4: Run Arduino CI tests
       - name: Run Arduino CI Tests
         run: |
           arduino_ci.rb

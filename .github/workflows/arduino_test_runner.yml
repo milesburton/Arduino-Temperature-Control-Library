@@ -9,61 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Create mock headers
-        run: |
-          # Create directory structure for mock headers
-          mkdir -p $GITHUB_WORKSPACE/mock/avr/util
-          
-          # Create mock crc16.h
-          cat > $GITHUB_WORKSPACE/mock/avr/util/crc16.h << 'EOF'
-          #ifndef _UTIL_CRC16_H_
-          #define _UTIL_CRC16_H_
-          
-          #include <stdint.h>
-          
-          static inline uint16_t _crc16_update(uint16_t crc, uint8_t data) {
-              return (crc << 8) | data;
-          }
-          
-          #endif
-          EOF
-          
-          # Create mock pgmspace.h
-          cat > $GITHUB_WORKSPACE/mock/avr/pgmspace.h << 'EOF'
-          #ifndef __PGMSPACE_H_
-          #define __PGMSPACE_H_
-          
-          #include <inttypes.h>
-          
-          #define PROGMEM
-          #define PGM_P  const char *
-          #define PSTR(str) (str)
-          
-          #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-          #define pgm_read_word(addr) (*(const unsigned short *)(addr))
-          #define pgm_read_dword(addr) (*(const unsigned long *)(addr))
-          #define pgm_read_float(addr) (*(const float *)(addr))
-          
-          #define strlen_P(s) strlen((const char *)(s))
-          #define strcpy_P(dest, src) strcpy((char *)(dest), (const char *)(src))
-          #define strncpy_P(dest, src, n) strncpy((char *)(dest), (const char *)(src), (n))
-          
-          #endif
-          EOF
-          
-          # Create mock inttypes.h
-          cat > $GITHUB_WORKSPACE/mock/inttypes.h << 'EOF'
-          #ifndef _INTTYPES_H
-          #define _INTTYPES_H
-          
-          #include <stdint.h>
-          
-          typedef int32_t int_farptr_t;
-          typedef uint32_t uint_farptr_t;
-          
-          #endif
-          EOF
-      
       - name: Create required directories
         run: |
           mkdir -p $GITHUB_WORKSPACE/bin
@@ -74,19 +19,6 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
         
-      - name: Configure Arduino CLI
-        run: |
-          cat > "$GITHUB_WORKSPACE/arduino-cli.yaml" << EOF
-          directories:
-            data: $GITHUB_WORKSPACE/.arduino15
-            downloads: $GITHUB_WORKSPACE/.arduino15/staging
-            user: $GITHUB_WORKSPACE/libraries
-          board_manager:
-            additional_urls: []
-          library:
-            enable_unsafe_install: true
-          EOF
-          
       - name: Install Arduino cores
         run: |
           arduino-cli core update-index
@@ -103,10 +35,8 @@ jobs:
       
       - name: Install Arduino CI
         run: |
-          gem install arduino_ci -v 1.6.2
+          gem install arduino_ci -v 1.5.0
       
       - name: Run Arduino CI Tests
-        env:
-          CPLUS_INCLUDE_PATH: ${{ github.workspace }}/mock:$CPLUS_INCLUDE_PATH
         run: |
           arduino_ci.rb

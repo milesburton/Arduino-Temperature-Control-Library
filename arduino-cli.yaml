@@ -5,7 +5,7 @@ daemon:
 directories:
   data: $GITHUB_WORKSPACE/.arduino15
   downloads: $GITHUB_WORKSPACE/.arduino15/staging
-  user: $GITHUB_WORKSPACE/Arduino
+  user: $GITHUB_WORKSPACE/libraries
 library:
   enable_unsafe_install: true
 logging:

@@ -6,14 +6,3 @@ unittest:
     - uno
   libraries:
     - "OneWire"
-aux_libraries_for_ci:
-  - OneWire
-aux_libraries_for_unittest:
-  - OneWire
-configuration:
-  architecture: "avr"
-  board: "uno"
-directories:
-  lib_dir: "$GITHUB_WORKSPACE/libraries"
-  arduino_dir: "$GITHUB_WORKSPACE"
-  arduino_libraries_dir: "$GITHUB_WORKSPACE/libraries"

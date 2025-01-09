@@ -55,6 +55,11 @@ jobs:
         run: |
           gem install arduino_ci -v 1.6.2
       
+      - name: Create mock AVR include structure
+        run: |
+          sudo mkdir -p /usr/include/avr/util
+          sudo cp /usr/lib/avr/include/util/crc16.h /usr/include/avr/util/
+      
       - name: Run Arduino CI Tests
         run: |
-          arduino_ci.rb
+          CPLUS_INCLUDE_PATH=/usr/lib/avr/include:$CPLUS_INCLUDE_PATH arduino_ci.rb

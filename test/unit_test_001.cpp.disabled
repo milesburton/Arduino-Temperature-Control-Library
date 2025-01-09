@@ -1,10 +1,12 @@
-// //
-// //    FILE: unit_test_001.cpp
-// //  AUTHOR: Miles Burton / Rob Tillaart
-// //    DATE: 2021-01-10
-// // PURPOSE: unit tests for the Arduino-Temperature-Control-Library
-// //          https://github.com/MilesBurton/Arduino-Temperature-Control-Library
-// //
+// DISABLED AS NOT ALL STD LIBRARIES ARE MOCKED / INCLUDEABLE
+
+//
+//    FILE: unit_test_001.cpp
+//  AUTHOR: Miles Burton / Rob Tillaart
+//    DATE: 2021-01-10
+// PURPOSE: unit tests for the Arduino-Temperature-Control-Library
+//          https://github.com/MilesBurton/Arduino-Temperature-Control-Library
+//
 
 // #include <ArduinoUnitTests.h>
 // #include <Arduino.h>
@@ -75,3 +77,5 @@
 // }
 
 // unittest_main()
+
+// --------

@@ -1,3 +1,5 @@
+// DISABLED AS NOT ALL STD LIBRARIES ARE MOCKED / INCLUDEABLE
+
 // #include <DallasTemperature.h>
 // #include <ArduinoUnitTests.h>
 
@@ -16,3 +18,5 @@
 //     sensors.begin();
 //     assertFalse(sensors.isParasitePowerMode());
 // }
+
+// --------

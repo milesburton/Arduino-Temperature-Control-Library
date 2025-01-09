@@ -17,18 +17,28 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Ruby
+      # Step 2: Install Arduino CLI
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sudo sh
+
+      # Step 3: Set up Ruby
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
 
-      # Step 3: Install Arduino CI gem
+      # Step 4: Install Arduino CI gem
       - name: Install Arduino CI
         run: |
           gem install arduino_ci -v 1.5.0
 
-      # Step 4: Run Arduino CI tests
+      # Step 5: Install OneWire Library
+      - name: Install OneWire Library
+        run: |
+          arduino-cli lib install "OneWire"
+
+      # Step 6: Run Arduino CI tests
       - name: Run Arduino CI Tests
         run: |
           arduino_ci.rb

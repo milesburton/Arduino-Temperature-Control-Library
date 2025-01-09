@@ -17,6 +17,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Step 1.5: Debug .arduino-ci.yml
+      - name: Debug .arduino-ci.yml
+        run: |
+          cat .arduino-ci.yml        
+
       # Step 2: Install Arduino CLI
       - name: Install Arduino CLI
         run: |
@@ -42,6 +47,13 @@ jobs:
       - name: Install OneWire Library
         run: |
           arduino-cli lib install "OneWire"
+
+      - name: Debug .arduino-ci.yml Configuration and Arduino Setup
+        run: |
+          arduino-cli core list
+          arduino-cli lib list
+          cat .arduino-ci.yml
+        
 
       # Step 7: Run Arduino CI tests
       - name: Run Arduino CI Tests

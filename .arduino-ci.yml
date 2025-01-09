@@ -4,7 +4,6 @@ compile:
     - uno          # Standard AVR platform
     - due          # SAM platform
     - m4           # SAMD platform (Adafruit Feather M4 or similar)
-    - esp8266      # ESP8266 platform for Wi-Fi boards
     # Add additional platforms if needed, like STM32 or ESP32
     # - mega2560    # If needed for expanded AVR testing
     # - stm32:disco_f407vg # Example STM32 board, adjust for your target board

@@ -1,0 +1,15 @@
+{
+    "name": "Arduino Library Development",
+    "dockerFile": "Dockerfile",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vsciot-vscode.vscode-arduino",
+                "ms-vscode.cpptools"
+            ]
+        }
+    },
+    "postCreateCommand": "arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
+    "updateContentCommand": "/usr/local/bin/update-libraries.sh",
+    "remoteUser": "vscode"
+}

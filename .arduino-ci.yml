@@ -1,7 +1,9 @@
 compile:
   platforms:
-    - arduino:avr:uno
+    - uno
   libraries:
     - "OneWire"
-skip_examples: false
 skip_unittest: true
+
+aux_libraries_for_ci:
+  - "OneWire"

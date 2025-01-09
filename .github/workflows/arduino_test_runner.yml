@@ -11,19 +11,20 @@ jobs:
       
       - name: Create required directories
         run: |
-          mkdir -p $GITHUB_WORKSPACE/bin
           mkdir -p $GITHUB_WORKSPACE/libraries
           mkdir -p $GITHUB_WORKSPACE/.arduino15
           mkdir -p $GITHUB_WORKSPACE/Arduino
 
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
-        
-      - name: Install Arduino cores
+
+      - name: Configure Arduino CLI
         run: |
+          arduino-cli config init
+          arduino-cli config set library.enable_unsafe_install true
           arduino-cli core update-index
           arduino-cli core install arduino:avr
-      
+        
       - name: Install OneWire library
         run: |
           arduino-cli lib install OneWire

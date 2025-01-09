@@ -19,17 +19,24 @@ jobs:
       - name: Install Arduino CLI
         run: |
           curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$GITHUB_WORKSPACE/bin sh
-          echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
+          export PATH="$GITHUB_WORKSPACE/bin:$PATH"
+          chmod +x $GITHUB_WORKSPACE/bin/arduino-cli
           arduino-cli version
+        env:
+          PATH: "$GITHUB_WORKSPACE/bin:${{ env.PATH }}"
       
       - name: Install Arduino cores
         run: |
-          arduino-cli core update-index
-          arduino-cli core install arduino:avr
+          $GITHUB_WORKSPACE/bin/arduino-cli core update-index
+          $GITHUB_WORKSPACE/bin/arduino-cli core install arduino:avr
+        env:
+          PATH: "$GITHUB_WORKSPACE/bin:${{ env.PATH }}"
       
       - name: Install OneWire library
         run: |
-          arduino-cli lib install OneWire --directory $GITHUB_WORKSPACE/libraries
+          $GITHUB_WORKSPACE/bin/arduino-cli lib install OneWire --directory $GITHUB_WORKSPACE/libraries
+        env:
+          PATH: "$GITHUB_WORKSPACE/bin:${{ env.PATH }}"
       
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -43,3 +50,5 @@ jobs:
       - name: Run Arduino CI Tests
         run: |
           arduino_ci.rb
+        env:
+          PATH: "$GITHUB_WORKSPACE/bin:${{ env.PATH }}"

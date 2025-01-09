@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Arduino CI
         run: |
-          gem install arduino_ci -v 1.5.0
+          gem install arduino_ci
 
       # Step 6: Run Arduino CI Tests
       - name: Run Arduino CI Tests

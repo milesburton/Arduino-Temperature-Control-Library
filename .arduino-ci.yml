@@ -14,15 +14,3 @@ unittest:
     - uno          # Native host system (Linux in this case)
   libraries:
     - "OneWire"     # Ensure OneWire library is available for testing
-
-# Additional configuration can go here if needed
-
-# Debugging Step: List installed libraries
-- name: List installed libraries
-  run: |
-    arduino-cli lib list
-
-# Debugging Step: List installed cores
-- name: List installed cores
-  run: |
-    arduino-cli core list

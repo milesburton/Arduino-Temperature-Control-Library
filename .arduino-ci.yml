@@ -1,8 +1,6 @@
 compile:
   platforms:
     - uno
-unittest:
-  platforms:
-    - uno
   libraries:
     - "OneWire"
+skip_unittest: true

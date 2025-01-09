@@ -1,6 +1,4 @@
-
 // DISABLED AS NOT ALL STD LIBRARIES ARE MOCKED / INCLUDEABLE
-
 
 //
 //    FILE: unit_test_001.cpp
@@ -8,116 +6,76 @@
 //    DATE: 2021-01-10
 // PURPOSE: unit tests for the Arduino-Temperature-Control-Library
 //          https://github.com/MilesBurton/Arduino-Temperature-Control-Library
-//          https://github.com/Arduino-CI/arduino_ci/blob/master/REFERENCE.md
 //
 
-// supported assertions
-// ----------------------------
-// assertEqual(expected, actual);               // a == b
-// assertNotEqual(unwanted, actual);            // a != b
-// assertComparativeEquivalent(expected, actual);    // abs(a - b) == 0 or (!(a > b) && !(a < b))
-// assertComparativeNotEquivalent(unwanted, actual); // abs(a - b) > 0  or ((a > b) || (a < b))
-// assertLess(upperBound, actual);              // a < b
-// assertMore(lowerBound, actual);              // a > b
-// assertLessOrEqual(upperBound, actual);       // a <= b
-// assertMoreOrEqual(lowerBound, actual);       // a >= b
-// assertTrue(actual);
-// assertFalse(actual);
-// assertNull(actual);
+// #include <ArduinoUnitTests.h>
+// #include <Arduino.h>
+// #include <OneWire.h>
+// #include <DallasTemperature.h>
 
-// // special cases for floats
-// assertEqualFloat(expected, actual, epsilon);    // fabs(a - b) <= epsilon
-// assertNotEqualFloat(unwanted, actual, epsilon); // fabs(a - b) >= epsilon
-// assertInfinity(actual);                         // isinf(a)
-// assertNotInfinity(actual);                      // !isinf(a)
-// assertNAN(arg);                                 // isnan(a)
-// assertNotNAN(arg);                              // !isnan(a)
+// // Mock pin for testing
+// #define ONE_WIRE_BUS 2
 
-#include <ArduinoUnitTests.h>
+// unittest_setup() {
+//     fprintf(stderr, "VERSION: %s\n", DALLASTEMPLIBVERSION);
+// }
 
+// unittest_teardown() {
+//     fprintf(stderr, "\n");
+// }
 
-#include "Arduino.h"
-#include "OneWire.h"
-#include "DallasTemperature.h"
+// // Test constants defined in the library
+// unittest(test_models) {
+//     assertEqual(0x10, DS18S20MODEL);
+//     assertEqual(0x28, DS18B20MODEL);
+//     assertEqual(0x22, DS1822MODEL);
+//     assertEqual(0x3B, DS1825MODEL);
+//     assertEqual(0x42, DS28EA00MODEL);
+// }
 
-/*
-NOTE 2022-06-03: why is unit test disabled.
-There are problems with the including of util/crc16.h by Onewire.h
-Without it test can't be run.
-*/
+// // Test error codes defined in the library
+// unittest(test_error_code) {
+//     assertEqual(DEVICE_DISCONNECTED_C, -127);
+//     assertEqual(DEVICE_DISCONNECTED_F, -196.6);
+//     assertEqual(DEVICE_DISCONNECTED_RAW, -7040);
 
+//     assertEqual(DEVICE_FAULT_OPEN_C, -254);
+//     assertEqualFloat(DEVICE_FAULT_OPEN_F, -425.2, 0.1);
+//     assertEqual(DEVICE_FAULT_OPEN_RAW, -32512);
 
-unittest_setup()
-{
-  fprintf(stderr, "VERSION: %s\n", DALLASTEMPLIBVERSION);
-}
+//     assertEqual(DEVICE_FAULT_SHORTGND_C, -253);
+//     assertEqualFloat(DEVICE_FAULT_SHORTGND_F, -423.4, 0.1);
+//     assertEqual(DEVICE_FAULT_SHORTGND_RAW, -32384);
 
-unittest_teardown()
-{
-  fprintf(stderr, "\n");
-}
+//     assertEqual(DEVICE_FAULT_SHORTVDD_C, -252);
+//     assertEqualFloat(DEVICE_FAULT_SHORTVDD_F, -421.6, 0.1);
+//     assertEqual(DEVICE_FAULT_SHORTVDD_RAW, -32256);
+// }
 
+// // Test basic initialization and functionality of the DallasTemperature library
+// unittest(test_initialization) {
+//     OneWire oneWire(ONE_WIRE_BUS);
+//     DallasTemperature sensors(&oneWire);
 
-unittest(test_models)
-{
-  assertEqual(0x10, DS18S20MODEL);
-  assertEqual(0x28, DS18B20MODEL);
-  assertEqual(0x22, DS1822MODEL);
-  assertEqual(0x3B, DS1825MODEL);
-  assertEqual(0x42, DS28EA00MODEL);
-}
+//     sensors.begin();
 
+//     // Initially, there should be no devices detected
+//     assertEqual(0, sensors.getDeviceCount());
+//     assertFalse(sensors.isParasitePowerMode());
+// }
 
-unittest(test_error_code)
-{
-  assertEqual(-255,   DEVICE_DISCONNECTED_C);
-  assertEqual(-427,   DEVICE_DISCONNECTED_F);
-  assertEqual(-32640, DEVICE_DISCONNECTED_RAW);
+// // Simulate a basic temperature read (mocked)
+// unittest(test_temperature_read) {
+//     OneWire oneWire(ONE_WIRE_BUS);
+//     DallasTemperature sensors(&oneWire);
 
-  assertEqual(-254, DEVICE_FAULT_OPEN_C);
-  assertEqualFloat(-425.199982, DEVICE_FAULT_OPEN_F, 0.001);
-  assertEqual(-32512, DEVICE_FAULT_OPEN_RAW);
+//     sensors.begin();
 
-  assertEqual(-253, DEVICE_FAULT_SHORTGND_C);
-  assertEqualFloat(-423.399994, DEVICE_FAULT_SHORTGND_F, 0.001);
-  assertEqual(-32384, DEVICE_FAULT_SHORTGND_RAW);
+//     // Mock reading temperature
+//     float tempC = sensors.getTempCByIndex(0);
+//     assertEqual(DEVICE_DISCONNECTED_C, tempC); // Simulated no device connected
+// }
 
-  assertEqual(-252, DEVICE_FAULT_SHORTVDD_C);
-  assertEqualFloat(-421.599976, DEVICE_FAULT_SHORTVDD_F, 0.001);
-  assertEqual( -32256, DEVICE_FAULT_SHORTVDD_RAW);
-}
-
-
-unittest(test_simple)
-{
-/*
-  // BASED UPON SIMPLE (won't run, see above)
-  // 
-  // Data wire is plugged into port 2 on the Arduino
-  #define ONE_WIRE_BUS 2
-
-  // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-  OneWire oneWire(ONE_WIRE_BUS);
-
-  // Pass our oneWire reference to Dallas Temperature. 
-  DallasTemperature sensors(&oneWire);
-  sensors.begin();
-  sensors.requestTemperatures();
-  float tempC = sensors.getTempCByIndex(0);
-  if(tempC != DEVICE_DISCONNECTED_C) 
-  {
-    fprintf(stderr, "Temperature for the device 1 (index 0) is: ");
-    fprintf(stderr, "5f\n", tempC);
-  } 
-  else
-  {
-    fprintf(stderr, "Error: Could not read temperature data\n");
-  }
-*/
-
-  assertEqual(1, 1);  // keep unit test happy
-}
-
-unittest_main()
+// unittest_main()
 
 // --------

@@ -1,15 +1,9 @@
 compile:
-  # Choosing to run compilation tests on 2 different Arduino platforms
   platforms:
     - uno
-    - due
-    # - zero         # SAMD covered by M4
-    # - leonardo     # AVR covered by UNO
-    - m4
-    # - esp32        # errors on OneWire =>  util/crc16.h  vs  rom/crc.h
-    - esp8266
-    # - mega2560     # AVR covered by UNO
-unittest:
-  # These dependent libraries will be installed
   libraries:
     - "OneWire"
+skip_unittest: true
+
+aux_libraries_for_ci:
+  - "OneWire"

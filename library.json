@@ -1,6 +1,6 @@
 {
   "name": "DallasTemperature",
-  "keywords": "onewire, 1-wire, bus, sensor, temperature",
+  "keywords": "onewire, 1-wire, bus, sensor, temperature, DS18B20, DS18S20, DS1822, DS1820, MAX31850",
   "description": "Arduino Library for Dallas Temperature ICs (DS18B20, DS18S20, DS1822, DS1820, MAX31850)",
   "repository":
   {
@@ -11,7 +11,7 @@
   [
     {
       "name": "Miles Burton",
-      "email": "miles@mnetcs.com",
+      "email": "mail@milesburton.com",
       "url": "http://www.milesburton.com",
       "maintainer": true
     },
@@ -32,7 +32,7 @@
   {
     "paulstoffregen/OneWire": "^2.3.5"
   },
-  "version": "3.11.0",
+  "version": "4.0.1",
   "frameworks": "arduino",
   "platforms": "*"
 }

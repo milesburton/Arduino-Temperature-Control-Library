@@ -736,3 +736,39 @@ bool DallasTemperature::verifyDeviceCount(void) {
     
     return false;
 }
+
+void DallasTemperature::setUserData(const uint8_t* deviceAddress, int16_t data) {
+    // return when stored value == new value
+    if (getUserData(deviceAddress) == data)
+        return;
+
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad)) {
+        scratchPad[HIGH_ALARM_TEMP] = data >> 8;
+        scratchPad[LOW_ALARM_TEMP] = data & 255;
+        writeScratchPad(deviceAddress, scratchPad);
+    }
+}
+
+void DallasTemperature::setUserDataByIndex(uint8_t deviceIndex, int16_t data) {
+    DeviceAddress deviceAddress;
+    if (getAddress(deviceAddress, deviceIndex)) {
+        setUserData((uint8_t*)deviceAddress, data);
+    }
+}
+
+int16_t DallasTemperature::getUserData(const uint8_t* deviceAddress) {
+    int16_t data = 0;
+    ScratchPad scratchPad;
+    if (isConnected(deviceAddress, scratchPad)) {
+        data = scratchPad[HIGH_ALARM_TEMP] << 8;
+        data += scratchPad[LOW_ALARM_TEMP];
+    }
+    return data;
+}
+
+int16_t DallasTemperature::getUserDataByIndex(uint8_t deviceIndex) {
+    DeviceAddress deviceAddress;
+    getAddress(deviceAddress, deviceIndex);
+    return getUserData((uint8_t*)deviceAddress);
+}

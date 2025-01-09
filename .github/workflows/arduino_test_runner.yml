@@ -19,6 +19,19 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
         
+      - name: Configure Arduino CLI
+        run: |
+          cat > "$GITHUB_WORKSPACE/arduino-cli.yaml" << EOF
+          directories:
+            data: $GITHUB_WORKSPACE/.arduino15
+            downloads: $GITHUB_WORKSPACE/.arduino15/staging
+            user: $GITHUB_WORKSPACE/libraries
+          board_manager:
+            additional_urls: []
+          library:
+            enable_unsafe_install: true
+          EOF
+          
       - name: Install Arduino cores
         run: |
           arduino-cli core update-index
@@ -26,7 +39,7 @@ jobs:
       
       - name: Install OneWire library
         run: |
-          arduino-cli lib install OneWire --directory $GITHUB_WORKSPACE/libraries
+          arduino-cli lib install OneWire
       
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

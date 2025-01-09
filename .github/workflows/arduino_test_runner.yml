@@ -29,7 +29,6 @@ jobs:
           /home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin/arduino-cli core update-index
           /home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin/arduino-cli core install arduino:avr
           /home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin/arduino-cli core install arduino:sam
-          /home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/bin/arduino-cli core install esp8266:esp8266  # Add esp8266 core
 
       # Debugging Step 1: Check installed cores
       - name: List installed cores

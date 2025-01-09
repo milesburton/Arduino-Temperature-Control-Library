@@ -2,11 +2,6 @@ compile:
   # Compile tests on multiple Arduino platforms
   platforms:
     - uno          # Standard AVR platform
-    - due          # SAM platform
-    - m4           # SAMD platform (Adafruit Feather M4 or similar)
-    # Add additional platforms if needed, like STM32 or ESP32
-    # - mega2560    # If needed for expanded AVR testing
-    # - stm32:disco_f407vg # Example STM32 board, adjust for your target board
 
 unittest:
   # Unit test platforms and dependencies

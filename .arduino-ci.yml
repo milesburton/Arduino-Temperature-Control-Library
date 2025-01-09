@@ -12,5 +12,5 @@ compile:
 unittest:
   # These dependent libraries will be installed
   libraries:
-    - "avr-libc"
+    - "Arduino"
     - "OneWire"

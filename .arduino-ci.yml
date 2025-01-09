@@ -1,16 +1,24 @@
 compile:
-  # Compile tests on multiple Arduino platforms
   platforms:
-    - uno          # Standard AVR platform
-    - due          # SAM platform
-    - m4           # SAMD platform (Adafruit Feather M4 or similar)
-    # Add additional platforms if needed, like STM32 or ESP32
-    # - mega2560    # If needed for expanded AVR testing
-    # - stm32:disco_f407vg # Example STM32 board, adjust for your target board
+    - uno
 
 unittest:
-  # Unit test platforms and dependencies
   platforms:
-    - uno          # Native host system (Linux in this case)
+    - uno
   libraries:
-    - "OneWire"     # Ensure OneWire library is available for testing
+    - "OneWire"
+
+aux_libraries_for_ci:
+  - OneWire
+
+aux_libraries_for_unittest:
+  - OneWire
+
+configuration:
+  architecture: "avr"
+  board: "uno"
+  
+directories:
+  lib_dir: "/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/libraries"
+  arduino_dir: "/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library"
+  arduino_libraries_dir: "/home/runner/work/Arduino-Temperature-Control-Library/Arduino-Temperature-Control-Library/libraries"

@@ -3,5 +3,7 @@ compile:
     - uno
   libraries:
     - "OneWire"
-unittest:
-  enabled: false
+skip_examples: false
+skip_unittest: true
+platforms:
+  - uno

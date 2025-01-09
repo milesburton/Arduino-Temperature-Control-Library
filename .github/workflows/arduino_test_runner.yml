@@ -9,8 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Create Arduino directories
+      - name: Create required directories
         run: |
+          mkdir -p $GITHUB_WORKSPACE/bin
           mkdir -p $GITHUB_WORKSPACE/libraries
           mkdir -p $GITHUB_WORKSPACE/.arduino15
           mkdir -p $GITHUB_WORKSPACE/Arduino

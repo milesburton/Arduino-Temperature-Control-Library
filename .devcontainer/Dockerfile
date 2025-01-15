@@ -47,3 +47,9 @@ RUN chmod +x /usr/local/bin/update-libraries.sh
 RUN echo 'alias arduino-build="./build.sh build"' >> /home/vscode/.bashrc && \
     echo 'alias arduino-test="./build.sh test"' >> /home/vscode/.bashrc && \
     echo 'alias arduino-build-test="./build.sh all"' >> /home/vscode/.bashrc
+
+# Add welcome message to .bashrc
+RUN echo '\n# Welcome to the dev container! Here are some useful aliases:' >> /home/vscode/.bashrc && \
+    echo 'echo "  - arduino-build: Build the project"' >> /home/vscode/.bashrc && \
+    echo 'echo "  - arduino-test: Run tests for the project"' >> /home/vscode/.bashrc && \
+    echo 'echo "  - arduino-build-test: Build and test the project"' >> /home/vscode/.bashrc

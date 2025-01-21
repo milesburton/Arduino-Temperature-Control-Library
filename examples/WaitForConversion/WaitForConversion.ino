@@ -62,5 +62,5 @@ void loop(void)
   Serial.println(sensors.getTempCByIndex(0));
   Serial.println("\n\n\n\n");
 
-  delay(5000);
+  delay(1500);
 }

@@ -36,6 +36,10 @@ extern "C" {
 
 #define NO_ALARM_HANDLER ((AlarmHandler *)0)
 
+// DSROM FIELDS
+#define DSROM_FAMILY    0
+#define DSROM_CRC       7
+
 DallasTemperature::DallasTemperature() {
     _wire = nullptr;
     devices = 0;
@@ -553,6 +557,37 @@ int32_t DallasTemperature::calculateTemperature(const uint8_t* deviceAddress, ui
                        | (((int16_t)scratchPad[TEMP_LSB]) << 3)
                        | neg;
     }
+
+  /*
+   DS1820 and DS18S20 have a 9-bit temperature register.
+
+   Resolutions greater than 9-bit can be calculated using the data from
+   the temperature, and COUNT REMAIN and COUNT PER °C registers in the
+   scratchpad.  The resolution of the calculation depends on the model.
+
+   While the COUNT PER °C register is hard-wired to 16 (10h) in a
+   DS18S20, it changes with temperature in DS1820.
+
+   After reading the scratchpad, the TEMP_READ value is obtained by
+   truncating the 0.5°C bit (bit 0) from the temperature data. The
+   extended resolution temperature can then be calculated using the
+   following equation:
+
+                                    COUNT_PER_C - COUNT_REMAIN
+   TEMPERATURE = TEMP_READ - 0.25 + --------------------------
+                                           COUNT_PER_C
+
+   Hagai Shatz simplified this to integer arithmetic for a 12 bits
+   value for a DS18S20, and James Cameron added legacy DS1820 support.
+
+   See - http://myarduinotoy.blogspot.co.uk/2013/02/12bit-result-from-ds18s20.html
+   */
+  
+  if ((deviceAddress[DSROM_FAMILY] == DS18S20MODEL) && (scratchPad[COUNT_PER_C] != 0)) {
+    fpTemperature = (((fpTemperature & 0xfff0) << 3) - 32
+                    + (((scratchPad[COUNT_PER_C] - scratchPad[COUNT_REMAIN]) << 7)
+                       / scratchPad[COUNT_PER_C])) | neg;
+  }
 
     return fpTemperature;
 }

@@ -57,12 +57,15 @@ A robust and feature-complete Arduino library for Maxim Temperature Integrated C
    }
 
    void loop(void) { 
-     sensors.requestTemperatures(); 
-     float tempC = sensors.getTempCByIndex(0);
-     Serial.print("Temperature: ");
-     Serial.print(tempC);
-     Serial.println("°C");
-     delay(1000);
+      sensors.requestTemperatures(); 
+      
+      delay(750); 
+      
+      float tempC = sensors.getTempCByIndex(0);
+      Serial.print("Temperature: ");
+      Serial.print(tempC);
+      Serial.println("°C");
+      delay(1000);
    }
    ```
 

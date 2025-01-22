@@ -1,7 +1,7 @@
 #ifndef DallasTemperature_h
 #define DallasTemperature_h
 
-#define DALLASTEMPLIBVERSION "4.0.2"
+#define DALLASTEMPLIBVERSION "4.0.3"
 
 // Configuration
 #ifndef REQUIRESNEW

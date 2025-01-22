@@ -7,12 +7,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     python3-pip \
     git \
     curl \
-    fish \ 
+    fish \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /home/vscode/.local/share/CMakeTools \
 && chown -R vscode:vscode /home/vscode/.local/share/CMakeTools
+
+RUN mkdir -p /home/vscode/.ssh \
+    && chown vscode:vscode /home/vscode/.ssh \
+    && chmod 700 /home/vscode/.ssh
 
 # Install arduino-cli
 RUN curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
@@ -26,7 +30,7 @@ ENV PATH="/usr/local/bin:${PATH}"
 # Create workspace directory
 WORKDIR /workspace
 
-# Copy arduino-cli configuration (customize to your actual path)
+# Copy arduino-cli configuration (customise to your actual path)
 COPY arduino-cli.yaml /root/.arduino15/arduino-cli.yaml
 
 # Install build essentials
@@ -64,7 +68,10 @@ RUN mkdir -p /home/vscode/.config/fish && \
     echo 'set -gx PATH /usr/local/bin $PATH' >> /home/vscode/.config/fish/config.fish && \
     echo '# Welcome to the Fish shell inside the dev container!' >> /home/vscode/.config/fish/config.fish
 
-# If you want to default to fish shell (uncomment below),
-# you can either set the SHELL environment variable or change the user default shell:
-# RUN chsh -s /usr/bin/fish vscode
-# ENV SHELL=/usr/bin/fish
+# Generate SSH keys and set proper ownership and permissions
+RUN if [ ! -f /home/vscode/.ssh/id_rsa ]; then \
+        ssh-keygen -t rsa -b 4096 -N "" -C "devcontainer@local" -f /home/vscode/.ssh/id_rsa && \
+        chmod 600 /home/vscode/.ssh/id_rsa && \
+        chmod 644 /home/vscode/.ssh/id_rsa.pub && \
+        chown vscode:vscode /home/vscode/.ssh/id_rsa /home/vscode/.ssh/id_rsa.pub ; \
+    fi

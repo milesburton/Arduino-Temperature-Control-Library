@@ -1,9 +1,15 @@
+# .arduino-ci.yml
+
+# Compilation settings
 compile:
   platforms:
     - uno
   libraries:
     - "OneWire"
-skip_unittest: true
 
-aux_libraries_for_ci:
-  - "OneWire"
+# Unit testing settings
+unittest:
+  platforms:
+    - uno
+  libraries:
+    - "OneWire"

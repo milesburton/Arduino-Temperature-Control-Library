@@ -72,11 +72,22 @@ jobs:
         run: |
           ls -R
 
-      - name: Remove Blacklisted Example Sketches
+      - name: Run tests (skip example compilation)
         run: |
-          echo "Removing blacklisted example sketches..."
-          rm -f examples/ESP-WebServer/ESP-WebServer.ino
+          # Run arduino_ci for unit tests only (skip example compilation)
+          export ARDUINO_CI_SELECTED_BOARD="arduino:avr:uno"
+          bundle exec arduino_ci.rb --skip-examples-compilation
 
-      - name: Run tests
+      - name: Compile all sketches for AVR platform
         run: |
-          bundle exec arduino_ci.rb
+          # Compile all sketches for AVR platform (Arduino Uno), excluding ESP-WebServer
+          for sketch in $(find examples -name "*.ino" ! -path "*/ESP-WebServer/*"); do
+            arduino-cli compile --fqbn arduino:avr:uno $sketch
+          done
+
+      - name: Compile all sketches for ESP8266 platform
+        run: |
+          # Compile all sketches for ESP8266 platform (NodeMCU v2)
+          for sketch in $(find examples -name "*.ino"); do
+            arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 $sketch
+          done

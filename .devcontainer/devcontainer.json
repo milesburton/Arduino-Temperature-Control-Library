@@ -1,23 +1,29 @@
 {
-    "name": "Arduino Library Development",
-    "dockerFile": "Dockerfile",
-    "mounts": [
+  "name": "Arduino Library Development",
+  "build": {
+      "dockerfile": "Dockerfile",
+      "context": ".."
+  },
+  "mounts": [
       "source=devcontainer_ssh,target=/home/vscode/.ssh,type=volume",
       "source=devcontainer_bash_history,target=/home/vscode/.bash_history,type=volume",
-      "source=devcontainer_fish_history,target=/home/vscode/.local/share/fish/fish_history,type=volume"
-    ],
-    "customizations": {
+      "source=devcontainer_fish_history,target=/home/vscode/.local/share/fish/fish_history,type=volume",
+      "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "customizations": {
       "vscode": {
-        "extensions": [
-          "vsciot-vscode.vscode-arduino",
-          "ms-vscode.cpptools",
-          "ms-azuretools.vscode-docker",
-          "yzhang.markdown-all-in-one"
-        ]
+          "extensions": [
+              "vsciot-vscode.vscode-arduino",
+              "ms-vscode.cpptools",
+              "ms-azuretools.vscode-docker",
+              "yzhang.markdown-all-in-one"
+          ],
+          "settings": {
+              "terminal.integrated.defaultProfile.linux": "fish",
+              "arduino.path": "/usr/local/bin/arduino-cli"
+          }
       }
-    },
-    "postCreateCommand": "arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
-    "updateContentCommand": "/usr/local/bin/update-libraries.sh",
-    "remoteUser": "vscode"
-  }
-  
+  },
+  "postCreateCommand": "arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
+  "remoteUser": "vscode"
+}

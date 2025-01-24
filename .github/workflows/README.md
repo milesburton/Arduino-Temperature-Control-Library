@@ -1,9 +1,5 @@
 # 📂 GitHub Workflows for Arduino Temperature Control Library
 
-[![Workflow Status](https://github.com/your-username/your-repo/actions/workflows/arduino-ci.yml/badge.svg)](https://github.com/your-username/your-repo/actions/workflows/arduino-ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/your-username/your-repo/blob/main/LICENSE)
-[![GitHub Releases](https://img.shields.io/github/release/your-username/your-repo.svg?maxAge=3600)](https://github.com/your-username/your-repo/releases)
-
 Automate testing, compilation, and validation of the Arduino Temperature Control Library across multiple platforms using GitHub Actions.
 
 ## 🛠️ Workflows Overview

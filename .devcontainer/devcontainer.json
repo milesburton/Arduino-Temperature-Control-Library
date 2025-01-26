@@ -11,8 +11,7 @@
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
     "runArgs": [
-        "--init",
-        "--privileged"
+        "--init"
     ],
     "customizations": {
         "vscode": {
@@ -28,6 +27,6 @@
             }
         }
     },
-    "postCreateCommand": "arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
+    "postCreateCommand": "echo 'Welcome to the Arduino Library Development Environment!' && arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
     "remoteUser": "vscode"
-  }
+}

@@ -10,7 +10,7 @@ This **example Sketch** demonstrates how to use the [Arduino Temperature Control
 ## 🔎 Features
 - Reads from one or more **DS18B20** temperature sensors
 - Configurable **polling interval** (in milliseconds) and **history length** (number of readings)
-- **Lightweight dashboard** that visualizes the last N readings
+- **Lightweight dashboard** that visualises the last N readings
 - **REST endpoints** for easy integration:
   - `/temperature` - current readings
   - `/sensors` - sensor addresses
@@ -51,11 +51,13 @@ const int HISTORY_LENGTH = 360; // 1 hour at 10-second intervals
 
 ## ❓ Questions & Support
 - **Library Matters**: If you have issues with the **Arduino Temperature Control Library** itself, please open a ticket in the [official repository](https://github.com/milesburton/Arduino-Temperature-Control-Library/issues)
-- **This Sketch**: For help customizing this example, dealing with Wi-Fi issues, or setting up the chart dashboard, and other device-specific tweaks, please visit the [Arduino Forum](https://forum.arduino.cc/). You will find many friendly developers there ready to help.
+- **This Sketch**: For help customising this example, dealing with Wi-Fi issues, or setting up the chart dashboard, and other device-specific tweaks, please visit the [Arduino Forum](https://forum.arduino.cc/). You will find many friendly developers there ready to help.
 
 ---
 
 ## 📜 License
 This project is distributed under the [MIT License](https://opensource.org/licenses/MIT).
 
-> We hope you find this Sketch useful for monitoring temperatures - both in a machine-readable (REST) and human-friendly (web dashboard) format. Happy hacking! 🚀
+---
+
+We hope you find this Sketch useful for monitoring temperatures - both in a machine-readable (REST) and human-friendly (web dashboard) format. Happy hacking! 🚀

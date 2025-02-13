@@ -271,6 +271,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 
 void setup() {
   Serial.begin(115200);
+  Serial.println(WiFi.localIP());
   sensors.begin();
 
   for (int i = 0; i < MAX_SENSORS; i++) {

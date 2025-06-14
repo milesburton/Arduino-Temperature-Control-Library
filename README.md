@@ -113,8 +113,8 @@ The project includes a development container configuration for VS Code that prov
 
 - Original development by Miles Burton <mail@milesburton.com>
 - Multiple sensor support by Tim Newsome <nuisance@casualhacker.net>
-- Address-based temperature reading by Guil Barros [gfbarros@bappos.com]
-- Async mode by Rob Tillaart [rob.tillaart@gmail.com]
+- Address-based temperature reading by Guil Barros gfbarros@bappos.com
+- Async mode by Rob Tillaart rob.tillaart@gmail.com
 
 ## 📄 License
 

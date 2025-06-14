@@ -36,7 +36,7 @@ A robust and feature-complete Arduino library for Maxim Temperature Integrated C
 ## 📝 Basic Usage
 
 1. **Hardware Setup**
-   - Connect a 4k7 kΩ pull-up resistor between the 1-Wire data line and 5V power. Note this applies to the Arduino platform, for ESP32 and 8266 you'll need to adjust the resistor value accordingly.
+   - Connect a 4k7 Ω pull-up resistor between the 1-Wire data line and 5V power. Note this applies to the Arduino platform, for ESP32 and 8266 you'll need to adjust the resistor value accordingly.
    - For DS18B20: Ground pins 1 and 3 (the centre pin is the data line)
    - For reliable readings, see pull-up requirements in the [DS18B20 datasheet](https://datasheets.maximintegrated.com/en/ds/DS18B20.pdf) (page 7)
 

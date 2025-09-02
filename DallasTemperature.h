@@ -121,9 +121,6 @@ public:
     bool recallScratchPad(const uint8_t* = nullptr);
     void setAutoSaveScratchPad(bool);
     bool getAutoSaveScratchPad(void);
-    bool saveParameters(int addr = 0);
-    bool loadParameters(int addr = 0);
-
 
 #if REQUIRESALARMS
     typedef void AlarmHandler(const uint8_t*);

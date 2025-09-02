@@ -807,25 +807,3 @@ int16_t DallasTemperature::getUserDataByIndex(uint8_t deviceIndex) {
     getAddress(deviceAddress, deviceIndex);
     return getUserData((uint8_t*)deviceAddress);
 }
-struct PIDParams { float Kp; float Ki; float Kd; uint16_t checksum; };
-static uint16_t calcChecksum(const PIDParams &p) {
-    uint32_t sum = 0;
-    sum += *((uint32_t*)&p.Kp);
-    sum += *((uint32_t*)&p.Ki);
-    sum += *((uint32_t*)&p.Kd);
-    return (uint16_t)(sum & 0xFFFF);
-}
-bool PID::saveParameters(int addr) {
-    PIDParams p{dispKp, dispKi, dispKd, 0};
-    p.checksum = calcChecksum(p);
-    for (size_t i = 0; i < sizeof(p); ++i) EEPROM.write(addr + i, *((uint8_t*)&p + i));
-    EEPROM.commit();
-    return true;
-}
-bool PID::loadParameters(int addr) {
-    PIDParams p;
-    for (size_t i = 0; i < sizeof(p); ++i) *((uint8_t*)&p + i) = EEPROM.read(addr + i);
-    if (p.checksum != calcChecksum(p)) return false;
-    dispKp = p.Kp; dispKi = p.Ki; dispKd = p.Kd;
-    return true;
-}

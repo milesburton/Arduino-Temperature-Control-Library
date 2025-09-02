@@ -105,6 +105,7 @@ void loop(void)
   Serial.print("Requesting temperatures...");
   sensors.requestTemperatures(); // Send the command to get temperatures
   Serial.println("DONE");
+  delay(1500);
 
   // It responds almost immediately. Let's print out the data
   printTemperature(insideThermometer); // Use a simple function to print out the data

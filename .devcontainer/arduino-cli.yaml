@@ -1,0 +1,19 @@
+compile:
+  # Choosing to run compilation tests on 2 different Arduino platforms
+  platforms:
+    - uno
+    - due
+    # - zero         # SAMD covered by M4
+    # - leonardo     # AVR covered by UNO
+    - m4
+    # - esp32        # errors on OneWire =>  util/crc16.h  vs  rom/crc.h
+    # - esp8266
+    # - mega2560     # AVR covered by UNO
+unittest:
+  # These dependent libraries will be installed
+  libraries:
+    - "OneWire"
+board_manager:
+  additional_urls:
+    - https://arduino.esp8266.com/stable/package_esp8266com_index.json
+    - https://dl.espressif.com/dl/package_esp32_index.json

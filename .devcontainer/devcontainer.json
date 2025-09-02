@@ -1,0 +1,23 @@
+{
+    "name": "Arduino Library Development",
+    "dockerFile": "Dockerfile",
+    "mounts": [
+      "source=devcontainer_ssh,target=/home/vscode/.ssh,type=volume",
+      "source=devcontainer_bash_history,target=/home/vscode/.bash_history,type=volume",
+      "source=devcontainer_fish_history,target=/home/vscode/.local/share/fish/fish_history,type=volume"
+    ],
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "vsciot-vscode.vscode-arduino",
+          "ms-vscode.cpptools",
+          "ms-azuretools.vscode-docker",
+          "yzhang.markdown-all-in-one"
+        ]
+      }
+    },
+    "postCreateCommand": "arduino-cli core install arduino:avr && arduino-cli lib install ArduinoUnit && /usr/local/bin/update-libraries.sh",
+    "updateContentCommand": "/usr/local/bin/update-libraries.sh",
+    "remoteUser": "vscode"
+  }
+  

@@ -1,0 +1,93 @@
+name: Arduino-Temperature-Control-Library Github Workflow
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install AVR dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-avr avr-libc
+
+      - name: Create required directories
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/libraries
+          mkdir -p $GITHUB_WORKSPACE/.arduino15
+          mkdir -p $GITHUB_WORKSPACE/Arduino
+
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Configure Arduino CLI and install cores
+        run: |
+          arduino-cli config init
+          arduino-cli config set library.enable_unsafe_install true
+          arduino-cli config add board_manager.additional_urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+          arduino-cli core install esp8266:esp8266
+
+      - name: Install OneWire library
+        run: |
+          arduino-cli lib install OneWire
+          # Replace the CRC implementation directly in the OneWire library
+          cat > /home/runner/Arduino/libraries/OneWire/util/crc16.h << 'EOF'
+          #ifndef CRC16_H
+          #define CRC16_H
+          #include <stdint.h>
+
+          static inline uint16_t _crc16_update(uint16_t crc, uint8_t a)
+          {
+              crc ^= a;
+              for (uint8_t i = 0; i < 8; ++i) {
+                  if (crc & 1)
+                      crc = (crc >> 1) ^ 0xA001;
+                  else
+                      crc = (crc >> 1);
+              }
+              return crc;
+          }
+
+          #endif
+          EOF
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.0'
+
+      - name: Install bundler
+        run: |
+          gem install bundler
+
+      - name: Install dependencies
+        run: |
+          bundle install
+
+      - name: List repository contents (for debugging)
+        run: |
+          ls -R
+
+      - name: Run tests (skip example compilation)
+        run: |
+          # Run arduino_ci for unit tests only (skip example compilation)
+          export ARDUINO_CI_SELECTED_BOARD="arduino:avr:uno"
+          bundle exec arduino_ci.rb --skip-examples-compilation
+
+      - name: Compile all sketches for AVR platform
+        run: |
+          # Compile all sketches for AVR platform (Arduino Uno), excluding ESP-WebServer
+          for sketch in $(find examples -name "*.ino" ! -path "*/ESP-WebServer/*"); do
+            arduino-cli compile --fqbn arduino:avr:uno $sketch
+          done
+
+      - name: Compile all sketches for ESP8266 platform
+        run: |
+          # Compile all sketches for ESP8266 platform (NodeMCU v2)
+          for sketch in $(find examples -name "*.ino"); do
+            arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 $sketch
+          done

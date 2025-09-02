@@ -1,0 +1,19 @@
+board_manager:
+  additional_urls: []
+daemon:
+  port: "50051"
+directories:
+  data: $GITHUB_WORKSPACE/.arduino15
+  downloads: $GITHUB_WORKSPACE/.arduino15/staging
+  user: $GITHUB_WORKSPACE/libraries
+library:
+  enable_unsafe_install: true
+logging:
+  file: ""
+  format: text
+  level: info
+metrics:
+  addr: :9090
+  enabled: true
+sketch:
+  always_export_binaries: false

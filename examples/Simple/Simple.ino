@@ -34,6 +34,7 @@ void loop(void)
   Serial.print("Requesting temperatures...");
   sensors.requestTemperatures(); // Send the command to get temperatures
   Serial.println("DONE");
+  delay(1500);
   // After we got the temperatures, we can print them here.
   // We use the function ByIndex, and as an example get the temperature from the first sensor only.
   float tempC = sensors.getTempCByIndex(0);

@@ -15,12 +15,14 @@ A robust and feature-complete Arduino library for Maxim Temperature Integrated C
 
 ## 📌 Supported Devices
 
-- DS18B20
-- DS18S20 (⚠️ Known issues with this series)
-- DS1822
-- DS1820
-- MAX31820
-- MAX31850
+|  device    |   power   |  notes  |
+|:-----------|:---------:|:--------|
+|  DS18B20   |   3-5 V   |  the reference
+|  DS18S20   |   3-5 V   |  9 bit only, ⚠️ Known issues with this series
+|  DS1822    |   3-5 V   |
+|  DS1820    |   5 V     |  9 bit only
+|  MAX31820  |   3 V     |
+|  MAX31850/1  |   3-3.7V  |  thermocouple
 
 ## 🚀 Installation
 

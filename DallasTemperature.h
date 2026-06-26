@@ -77,7 +77,7 @@ public:
     // Setup & Configuration
     void setOneWire(OneWire*);
     void setPullupPin(uint8_t);
-    void begin(void);
+    void begin(uint8_t* addressBook = nullptr, uint8_t maxDeviceCount = 0);
     bool verifyDeviceCount(void);
 
     // Device Information

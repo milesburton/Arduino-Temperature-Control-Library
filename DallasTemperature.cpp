@@ -83,7 +83,7 @@ void DallasTemperature::setPullupPin(uint8_t _pullupPin) {
     deactivateExternalPullup();
 }
 
-void DallasTemperature::begin(void) {
+void DallasTemperature::begin(uint8_t* addressBook, uint8_t maxDeviceCount) {
     DeviceAddress deviceAddress;
     
     for (uint8_t retry = 0; retry < MAX_INITIALIZATION_RETRIES; retry++) {
@@ -95,6 +95,14 @@ void DallasTemperature::begin(void) {
         
         while (_wire->search(deviceAddress)) {
             if (validAddress(deviceAddress)) {
+                // Optionally capture the ROM discovered during enumeration into the
+                // caller-provided address book, so callers don't have to re-discover
+                // the same devices with getAddress()/search() afterwards — a second
+                // search pass that can fail intermittently on long or marginal buses.
+                if (addressBook && devices < maxDeviceCount) {
+                    memcpy(addressBook + (size_t)devices * sizeof(DeviceAddress),
+                           deviceAddress, sizeof(DeviceAddress));
+                }
                 devices++;
                 
                 if (validFamily(deviceAddress)) {

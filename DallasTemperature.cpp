@@ -237,6 +237,18 @@ void DallasTemperature::writeScratchPad(const uint8_t* deviceAddress, const uint
     }
 }
 
+bool DallasTemperature::saveScratchPadByIndex(uint8_t deviceIndex) {
+    DeviceAddress deviceAddress;
+    if (!getAddress(deviceAddress, deviceIndex)) return false;
+    return saveScratchPad(deviceAddress);
+}
+
+bool DallasTemperature::recallScratchPadByIndex(uint8_t deviceIndex) {
+    DeviceAddress deviceAddress;
+    if (!getAddress(deviceAddress, deviceIndex)) return false;
+    return recallScratchPad(deviceAddress);
+}
+
 bool DallasTemperature::saveScratchPad(const uint8_t* deviceAddress) {
     if (_wire->reset() == 0) return false;
     

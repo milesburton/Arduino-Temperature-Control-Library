@@ -318,12 +318,15 @@ float DallasTemperature::getTempFByIndex(uint8_t index) {
 }
 
 void DallasTemperature::setResolution(uint8_t newResolution) {
-    bitResolution = constrain(newResolution, 9, 12);
+    newResolution = constrain(newResolution, 9, 12);
+    bitResolution = newResolution;
     DeviceAddress deviceAddress;
     _wire->reset_search();
     for (uint8_t i = 0; i < devices; i++) {
         if (_wire->search(deviceAddress) && validAddress(deviceAddress)) {
-            setResolution(deviceAddress, bitResolution, true);
+            setResolution(deviceAddress, newResolution, true);
+            // DS18S20 is fixed at 9-bit but needs the 12-bit conversion delay.
+            if (deviceAddress[0] == DS18S20MODEL) bitResolution = 12;
         }
     }
 }
